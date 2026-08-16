@@ -3,23 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Next G WiFi - Self Care</title>
+    <title>Next G WiFi - Powered by Eagle Network Sbz</title>
     <style>
         body { background-color: #0F172A; color: white; font-family: Arial, sans-serif; margin: 0; padding: 16px; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; background-color: #F58220; padding: 12px 16px; border-radius: 8px; }
-        .header-title { font-size: 20px; font-weight: bold; }
+        .header-title { font-size: 18px; font-weight: bold; }
         .lang-select { background-color: white; color: black; border: none; padding: 6px 10px; border-radius: 4px; font-weight: bold; }
         .card { background-color: #1E293B; padding: 16px; border-radius: 10px; margin-top: 15px; border: 1px solid #334155; }
         .btn { background-color: #F58220; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 16px; margin-top: 10px; cursor: pointer; font-weight: bold; }
         .btn-qr { background-color: #2563EB; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 16px; margin-top: 8px; cursor: pointer; font-weight: bold; }
+        .btn-new-conn { background-color: #10B981; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 16px; margin-top: 8px; cursor: pointer; font-weight: bold; }
         .complaint-btn { background-color: #334155; color: white; border: 1px solid #F58220; padding: 12px; width: 100%; border-radius: 6px; margin-top: 8px; text-align: left; cursor: pointer; font-size: 14px; }
         .qr-box { display: none; text-align: center; background: white; color: black; padding: 15px; border-radius: 8px; margin-top: 10px; }
+        .input-box { width: 93%; padding: 12px; margin-top: 10px; border-radius: 6px; border: 1px solid #334155; background: #0F172A; color: white; font-size: 16px; }
+        
+        /* Advertisement Banner Style */
+        .ad-banner { background: linear-gradient(135deg, #F58220, #E11D48); padding: 15px; border-radius: 10px; text-align: center; margin-top: 15px; font-weight: bold; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .ad-banner a { color: #FFF; text-decoration: underline; }
+
+        /* Branding Footer Style */
+        .branding-footer { text-align: center; margin-top: 30px; padding: 15px; border-top: 1px solid #334155; color: #94A3B8; font-size: 14px; }
+        .branding-footer a { color: #F58220; text-decoration: none; font-weight: bold; }
+        
+        /* Pages visibility */
+        #dashboard-page { display: none; }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
-        <span class="header-title" id="txt-app-name">Next G WiFi</span>
+        <div>
+            <span class="header-title">Next G WiFi</span><br>
+            <small style="font-size:10px; color:#FFF;">Powered by Eagle Network Sbz</small>
+        </div>
         <select class="lang-select" onchange="changeLanguage(this.value)">
             <option value="hi">हिंदी</option>
             <option value="en">English</option>
@@ -27,31 +43,93 @@
         </select>
     </div>
 
-    <div class="card">
-        <h3 id="txt-plan-title">📶 आपका एक्टिव प्लान</h3>
-        <p><strong>Speed:</strong> 100 Mbps Unlimited Fiber</p>
-        <p><strong id="txt-validity-label">Validity:</strong> <span id="txt-validity">28 दिन बचे हैं</span></p>
-        
-        <button class="btn" onclick="payViaUPI()" id="btn-upi">💳 डायरेक्ट UPI से रिचार्ज करें</button>
-        
-        <button class="btn-qr" onclick="toggleQR()" id="btn-qr-txt">📱 QR कोड स्कैन करके पे करें</button>
-        
-        <div id="qr-container" class="qr-box">
-            <p style="margin:0 0 8px 0; font-weight:bold;">दूसरे फोन से स्कैन करें:</p>
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=yourvpa@upi&pn=NextGWiFi" alt="UPI QR Code">
+    <div id="login-page">
+        <div class="card" style="text-align: center;">
+            <h2>👋 Welcome to Next G WiFi</h2>
+            <p style="color:#94A3B8;">अपने पंजीकृत मोबाइल नंबर से लॉगिन करें</p>
+            
+            <input type="tel" id="mobile-number" class="input-box" placeholder="+91 मोबाइल नंबर दर्ज करें" maxlength="10">
+            <button class="btn" onclick="sendOTP()" id="btn-login">📱 OTP प्राप्त करें & लॉगिन करें</button>
+            
+            <div id="otp-section" style="display:none; margin-top:15px;">
+                <input type="number" id="otp-input" class="input-box" placeholder="4-अंकों का OTP दर्ज करें">
+                <button class="btn" style="background-color:#10B981;" onclick="verifyOTP()">✅ लॉगिन की पुष्टि करें</button>
+            </div>
+        </div>
+
+        <div class="card" style="text-align: center;">
+            <h3>🆕 नया वाई-फ़ाई कनेक्शन चाहिए?</h3>
+            <p style="color:#94A3B8;">बिना किसी परेशानी के तुरंत नया कनेक्शन बुक करें</p>
+            <button class="btn-new-conn" onclick="requestNewConnection()">📝 New Connection Book Karen</button>
         </div>
     </div>
 
-    <div class="card">
-        <h3 id="txt-complaint-title">🚨 त्वरित शिकायत (One-Tap Complaint)</h3>
-        <button class="complaint-btn" onclick="sendComplaint('Red Light')" id="c1">🔴 राउटर पर रेड लाइट आ रही है</button>
-        <button class="complaint-btn" onclick="sendComplaint('Wire Cut')" id="c2">✂️ वाई-फाई केबल / तार कट गई है</button>
-        <button class="complaint-btn" onclick="sendComplaint('Router Off')" id="c3">🔌 राउटर ऑन नहीं हो रहा (बंद है)</button>
-        <button class="complaint-btn" onclick="sendComplaint('Slow Speed')" id="c4">🚀 इंटरनेट / नेट बहुत स्लो चल रहा है</button>
-        <button class="complaint-btn" onclick="sendComplaint('Router Damaged')" id="c5">🛠️ राउटर खराब है / डिवाइस में खराबी है</button>
+    <div id="dashboard-page">
+
+        <div class="ad-banner">
+            🚀 ⚡ High-Speed Broadband Services & Web Solutions!<br>
+            <small>Visit: <a href="https://eaglenetworksbz.blogspot.com" target="_blank">Eagle Network Sbz Official</a></small>
+        </div>
+
+        <div class="card">
+            <h3 id="txt-plan-title">📶 आपका एक्टिव प्लान</h3>
+            <p><strong>Speed:</strong> 100 Mbps Unlimited Fiber</p>
+            <p><strong id="txt-validity-label">Validity:</strong> <span id="txt-validity">28 दिन बचे हैं</span></p>
+            
+            <button class="btn" onclick="payViaUPI()" id="btn-upi">💳 डायरेक्ट UPI से रिचार्ज करें</button>
+            <button class="btn-qr" onclick="toggleQR()" id="btn-qr-txt">📱 QR कोड स्कैन करके पे करें</button>
+            
+            <div id="qr-container" class="qr-box">
+                <p style="margin:0 0 8px 0; font-weight:bold;">दूसरे फोन से स्कैन करके पे करें:</p>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=yourvpa@upi&pn=NextGWiFi" alt="UPI QR Code">
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 id="txt-complaint-title">🚨 त्वरित शिकायत (One-Tap Complaint)</h3>
+            <button class="complaint-btn" onclick="sendComplaint('Red Light')" id="c1">🔴 राउटर पर रेड लाइट आ रही है</button>
+            <button class="complaint-btn" onclick="sendComplaint('Wire Cut')" id="c2">✂️ वाई-फाई केबल / तार कट गई है</button>
+            <button class="complaint-btn" onclick="sendComplaint('Router Off')" id="c3">🔌 राउटर ऑन नहीं हो रहा (बंद है)</button>
+            <button class="complaint-btn" onclick="sendComplaint('Slow Speed')" id="c4">🚀 इंटरनेट / नेट बहुत स्लो चल रहा है</button>
+            <button class="complaint-btn" onclick="sendComplaint('Router Damaged')" id="c5">🛠️ राउटर खराब है / डिवाइस में खराबी है</button>
+        </div>
+    </div>
+
+    <div class="branding-footer">
+        Design & Developed by <br>
+        <a href="https://eaglenetworksbz.blogspot.com" target="_blank">© Eagle Network Sbz</a> | All Rights Reserved
     </div>
 
     <script>
+        function sendOTP() {
+            var num = document.getElementById("mobile-number").value;
+            if(num.length === 10) {
+                alert("OTP आपके नंबर " + num + " पर भेज दिया गया है! (Demo OTP: 1234)");
+                document.getElementById("otp-section").style.display = "block";
+            } else {
+                alert("कृपया सही 10 अंकों का मोबाइल नंबर दर्ज करें!");
+            }
+        }
+
+        function verifyOTP() {
+            var otp = document.getElementById("otp-input").value;
+            if(otp === "1234" || otp.length === 4) {
+                alert("लॉगिन सफल रहा!");
+                document.getElementById("login-page").style.display = "none";
+                document.getElementById("dashboard-page").style.display = "block";
+            } else {
+                alert("गलत OTP! कृपया 1234 दर्ज करें।");
+            }
+        }
+
+        function requestNewConnection() {
+            var name = prompt("अपना पूरा नाम दर्ज करें:");
+            var phone = prompt("अपना संपर्क नंबर दर्ज करें:");
+            if(name && phone) {
+                alert("धन्यवाद " + name + "! आपकी न्यू कनेक्शन रिक्वेस्ट एडमिन को भेज दी गई है। Eagle Network Sbz टीम आपसे जल्द संपर्क करेगी।");
+            }
+        }
+
         function toggleQR() {
             var qr = document.getElementById("qr-container");
             qr.style.display = (qr.style.display === "block") ? "none" : "block";
@@ -62,7 +140,7 @@
         }
 
         function sendComplaint(type) {
-            alert("आपकी शिकायत दर्ज कर ली गई है: " + type);
+            alert("आपकी शिकायत एडमिन को दर्ज करा दी गई है: " + type);
         }
 
         function changeLanguage(lang) {
@@ -91,7 +169,7 @@
                 document.getElementById('c4').innerText = "🚀 انٹرنیٹ اسپیڈ سست ہے";
                 document.getElementById('c5').innerText = "🛠️ راؤٹر ڈیوائس خراب ہے";
             } else {
-                location.reload(); // Reset to Hindi
+                location.reload();
             }
         }
     </script>
