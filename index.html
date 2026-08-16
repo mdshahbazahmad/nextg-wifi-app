@@ -6,26 +6,94 @@
     <title>Next G WiFi - Self Care</title>
     <style>
         body { background-color: #0F172A; color: white; font-family: Arial, sans-serif; margin: 0; padding: 16px; }
-        .header { background-color: #F58220; padding: 15px; border-radius: 8px; text-align: center; font-size: 22px; font-weight: bold; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; background-color: #F58220; padding: 12px 16px; border-radius: 8px; }
+        .header-title { font-size: 20px; font-weight: bold; }
+        .lang-select { background-color: white; color: black; border: none; padding: 6px 10px; border-radius: 4px; font-weight: bold; }
         .card { background-color: #1E293B; padding: 16px; border-radius: 10px; margin-top: 15px; border: 1px solid #334155; }
-        .btn { background-color: #F58220; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 16px; margin-top: 10px; cursor: pointer; }
-        .complaint-btn { background-color: #334155; color: white; border: 1px solid #F58220; padding: 12px; width: 100%; border-radius: 6px; margin-top: 8px; text-align: left; cursor: pointer; }
+        .btn { background-color: #F58220; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 16px; margin-top: 10px; cursor: pointer; font-weight: bold; }
+        .btn-qr { background-color: #2563EB; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 16px; margin-top: 8px; cursor: pointer; font-weight: bold; }
+        .complaint-btn { background-color: #334155; color: white; border: 1px solid #F58220; padding: 12px; width: 100%; border-radius: 6px; margin-top: 8px; text-align: left; cursor: pointer; font-size: 14px; }
+        .qr-box { display: none; text-align: center; background: white; color: black; padding: 15px; border-radius: 8px; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <div class="header">Next G WiFi</div>
+
+    <div class="top-bar">
+        <span class="header-title" id="txt-app-name">Next G WiFi</span>
+        <select class="lang-select" onchange="changeLanguage(this.value)">
+            <option value="hi">हिंदी</option>
+            <option value="en">English</option>
+            <option value="ur">اردو</option>
+        </select>
+    </div>
+
     <div class="card">
-        <h3>📶 आपका एक्टिव प्लान</h3>
+        <h3 id="txt-plan-title">📶 आपका एक्टिव प्लान</h3>
         <p><strong>Speed:</strong> 100 Mbps Unlimited Fiber</p>
-        <p><strong>Validity:</strong> 28 दिन बचे हैं</p>
-        <button class="btn">💳 ऑनलाइन रिचार्ज करें (UPI)</button>
+        <p><strong id="txt-validity-label">Validity:</strong> <span id="txt-validity">28 दिन बचे हैं</span></p>
+        
+        <button class="btn" onclick="payViaUPI()" id="btn-upi">💳 डायरेक्ट UPI से रिचार्ज करें</button>
+        
+        <button class="btn-qr" onclick="toggleQR()" id="btn-qr-txt">📱 QR कोड स्कैन करके पे करें</button>
+        
+        <div id="qr-container" class="qr-box">
+            <p style="margin:0 0 8px 0; font-weight:bold;">दूसरे फोन से स्कैन करें:</p>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=yourvpa@upi&pn=NextGWiFi" alt="UPI QR Code">
+        </div>
     </div>
+
     <div class="card">
-        <h3>🚨 त्वरित शिकायत (One-Tap Complaint)</h3>
-        <button class="complaint-btn">🔴 राउटर पर रेड लाइट आ रही है</button>
-        <button class="complaint-btn">✂️ वाई-फाई केबल/तार कट गई है</button>
-        <button class="complaint-btn">🔌 राउटर ऑन नहीं हो रहा है</button>
-        <button class="complaint-btn">🚀 इंटरनेट स्लो चल रहा है</button>
+        <h3 id="txt-complaint-title">🚨 त्वरित शिकायत (One-Tap Complaint)</h3>
+        <button class="complaint-btn" onclick="sendComplaint('Red Light')" id="c1">🔴 राउटर पर रेड लाइट आ रही है</button>
+        <button class="complaint-btn" onclick="sendComplaint('Wire Cut')" id="c2">✂️ वाई-फाई केबल / तार कट गई है</button>
+        <button class="complaint-btn" onclick="sendComplaint('Router Off')" id="c3">🔌 राउटर ऑन नहीं हो रहा (बंद है)</button>
+        <button class="complaint-btn" onclick="sendComplaint('Slow Speed')" id="c4">🚀 इंटरनेट / नेट बहुत स्लो चल रहा है</button>
+        <button class="complaint-btn" onclick="sendComplaint('Router Damaged')" id="c5">🛠️ राउटर खराब है / डिवाइस में खराबी है</button>
     </div>
+
+    <script>
+        function toggleQR() {
+            var qr = document.getElementById("qr-container");
+            qr.style.display = (qr.style.display === "block") ? "none" : "block";
+        }
+
+        function payViaUPI() {
+            window.location.href = "upi://pay?pa=yourvpa@upi&pn=NextGWiFi&am=500&cu=INR";
+        }
+
+        function sendComplaint(type) {
+            alert("आपकी शिकायत दर्ज कर ली गई है: " + type);
+        }
+
+        function changeLanguage(lang) {
+            if(lang === 'en') {
+                document.getElementById('txt-plan-title').innerText = "📶 Your Active Plan";
+                document.getElementById('txt-validity-label').innerText = "Validity:";
+                document.getElementById('txt-validity').innerText = "28 Days Remaining";
+                document.getElementById('btn-upi').innerText = "💳 Pay via Direct UPI App";
+                document.getElementById('btn-qr-txt').innerText = "📱 Scan QR Code to Pay";
+                document.getElementById('txt-complaint-title').innerText = "🚨 Instant Complaint";
+                document.getElementById('c1').innerText = "🔴 Red light on Router";
+                document.getElementById('c2').innerText = "✂️ Fiber wire cable is cut";
+                document.getElementById('c3').innerText = "🔌 Router is Not Powering On";
+                document.getElementById('c4').innerText = "🚀 Internet Speed is Slow";
+                document.getElementById('c5').innerText = "🛠️ Router Device is Damaged";
+            } else if(lang === 'ur') {
+                document.getElementById('txt-plan-title').innerText = "📶 آپ کا ایکٹو پلان";
+                document.getElementById('txt-validity-label').innerText = "میعاد:";
+                document.getElementById('txt-validity').innerText = "28 دن باقی ہیں";
+                document.getElementById('btn-upi').innerText = "💳 براہ راست UPI سے ریچارج کریں";
+                document.getElementById('btn-qr-txt').innerText = "📱 QR کوڈ اسکین کرکے ادائیگی کریں";
+                document.getElementById('txt-complaint-title').innerText = "🚨 فوری شکایت";
+                document.getElementById('c1').innerText = "🔴 راؤٹر پر ریڈ لائٹ آ رہی ہے";
+                document.getElementById('c2').innerText = "✂️ وائی فائی کیبل کٹ گئی ہے";
+                document.getElementById('c3').innerText = "🔌 راؤٹر آن نہیں ہو رہا ہے";
+                document.getElementById('c4').innerText = "🚀 انٹرنیٹ اسپیڈ سست ہے";
+                document.getElementById('c5').innerText = "🛠️ راؤٹر ڈیوائس خراب ہے";
+            } else {
+                location.reload(); // Reset to Hindi
+            }
+        }
+    </script>
 </body>
 </html>
