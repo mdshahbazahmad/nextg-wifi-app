@@ -2,37 +2,57 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-color=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Next G WiFi - Powered by Eagle Network Sbz</title>
     
+    <meta name="theme-color" content="#0F172A">
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/93/93158.png">
+
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
     <style>
         body { background-color: #0F172A; color: white; font-family: Arial, sans-serif; margin: 0; padding: 16px; }
+        
+        /* 1. SPLASH / WELCOME SCREEN STYLES */
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #0F172A, #1E293B);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9999; text-align: center;
+        }
+        .splash-logo { width: 100px; height: 100px; margin-bottom: 20px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        
+        /* UI STYLES */
         .top-bar { display: flex; justify-content: space-between; align-items: center; background-color: #F58220; padding: 12px 16px; border-radius: 8px; }
         .header-title { font-size: 18px; font-weight: bold; }
         .lang-select { background-color: white; color: black; border: none; padding: 6px 10px; border-radius: 4px; font-weight: bold; }
         .card { background-color: #1E293B; padding: 16px; border-radius: 10px; margin-top: 15px; border: 1px solid #334155; }
         .btn { background-color: #F58220; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 16px; margin-top: 10px; cursor: pointer; font-weight: bold; }
+        .btn-plan { background-color: #0284C7; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 15px; margin-top: 8px; cursor: pointer; font-weight: bold; text-align: left; }
         .btn-qr { background-color: #2563EB; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 16px; margin-top: 8px; cursor: pointer; font-weight: bold; }
         .btn-new-conn { background-color: #10B981; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 16px; margin-top: 8px; cursor: pointer; font-weight: bold; }
         .complaint-btn { background-color: #334155; color: white; border: 1px solid #F58220; padding: 12px; width: 100%; border-radius: 6px; margin-top: 8px; text-align: left; cursor: pointer; font-size: 14px; }
         .qr-box { display: none; text-align: center; background: white; color: black; padding: 15px; border-radius: 8px; margin-top: 10px; }
         .input-box { width: 93%; padding: 12px; margin-top: 10px; border-radius: 6px; border: 1px solid #334155; background: #0F172A; color: white; font-size: 16px; }
-        
-        /* Advertisement Banner Style */
         .ad-banner { background: linear-gradient(135deg, #F58220, #E11D48); padding: 15px; border-radius: 10px; text-align: center; margin-top: 15px; font-weight: bold; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .ad-banner a { color: #FFF; text-decoration: underline; }
-
-        /* Branding Footer Style */
         .branding-footer { text-align: center; margin-top: 30px; padding: 15px; border-top: 1px solid #334155; color: #94A3B8; font-size: 14px; }
         .branding-footer a { color: #F58220; text-decoration: none; font-weight: bold; }
         
+        #login-page { display: none; }
         #dashboard-page { display: none; }
     </style>
 </head>
 <body>
+
+    <div id="splash-screen">
+        <img src="https://cdn-icons-png.flaticon.com/512/93/93158.png" class="splash-logo" alt="Next G WiFi Logo">
+        <h1 style="color:#F58220; margin:0;">Next G WiFi</h1>
+        <p style="color:#FFF; font-size:16px; margin-top:10px;">में आपका स्वागत है!</p>
+        <small style="color:#94A3B8; margin-top:30px;">Powered by Eagle Network Sbz</small>
+    </div>
 
     <div class="top-bar">
         <div>
@@ -48,9 +68,8 @@
 
     <div id="login-page">
         <div class="card" style="text-align: center;">
-            <h2>👋 Welcome to Next G WiFi</h2>
+            <h2>👋 Next G WiFi Sign-In</h2>
             <p style="color:#94A3B8;">अपने पंजीकृत मोबाइल नंबर से लॉगिन करें</p>
-            
             <input type="tel" id="mobile-number" class="input-box" placeholder="+91 मोबाइल नंबर दर्ज करें" maxlength="10">
             <button class="btn" onclick="sendOTP()" id="btn-login">📱 OTP प्राप्त करें & लॉगिन करें</button>
             
@@ -75,16 +94,17 @@
         </div>
 
         <div class="card">
-            <h3 id="txt-plan-title">📶 आपका एक्टिव प्लान</h3>
-            <p><strong>Speed:</strong> 100 Mbps Unlimited Fiber</p>
-            <p><strong id="txt-validity-label">Validity:</strong> <span id="txt-validity">28 दिन बचे हैं</span></p>
+            <h3 id="txt-plan-title">📶 वाई-फ़ाई रिचार्ज प्लान चुनिए</h3>
             
-            <button class="btn" onclick="payViaUPI()" id="btn-upi">💳 डायरेक्ट UPI से रिचार्ज करें</button>
+            <button class="btn-plan" onclick="payViaUPI(250, '15 Days Trial Plan')">🟢 ₹250 Plan (15 Days Fiber)</button>
+            <button class="btn-plan" style="background-color:#F58220;" onclick="payViaUPI(500, '1 Month Plan')">🔵 ₹500 Plan (1 Month Unlimited)</button>
+            <button class="btn-plan" style="background-color:#7C3AED;" onclick="payViaUPI(4000, '6 Months Plan')">🟣 ₹4,000 Plan (6 Months Fiber)</button>
+
             <button class="btn-qr" onclick="toggleQR()" id="btn-qr-txt">📱 QR कोड स्कैन करके पे करें</button>
             
             <div id="qr-container" class="qr-box">
-                <p style="margin:0 0 8px 0; font-weight:bold;">दूसरे फोन से स्कैन करके पे करें:</p>
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=yourvpa@upi&pn=NextGWiFi" alt="UPI QR Code">
+                <p style="margin:0 0 8px 0; font-weight:bold;">किसी भी UPI App से QR स्कैन करें:</p>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=owner@upi&pn=NextGWiFi" alt="UPI QR Code">
             </div>
         </div>
 
@@ -104,7 +124,12 @@
     </div>
 
     <script>
-        // Firebase Configuration
+        // Automatic 3-Second Splash Screen Transition
+        setTimeout(function() {
+            document.getElementById("splash-screen").style.display = "none";
+            document.getElementById("login-page").style.display = "block";
+        }, 3500);
+
         const firebaseConfig = {
             apiKey: "AIzaSyDwUAeovTTT_4qLvg4kR_vKiqkUcwAzf50",
             authDomain: "next-g-wifi-app-e37b6.firebaseapp.com",
@@ -114,10 +139,8 @@
             appId: "1:277844842916:web:f247acc99e74e744d14931"
         };
 
-        // Initialize Firebase & Firestore
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-
         var userMobile = "";
 
         function sendOTP() {
@@ -134,7 +157,6 @@
         function verifyOTP() {
             var otp = document.getElementById("otp-input").value;
             if(otp === "1234" || otp.length === 4) {
-                // Save user login to Firebase Database
                 db.collection("users").doc(userMobile).set({
                     mobile: userMobile,
                     lastLogin: new Date().toLocaleString()
@@ -143,7 +165,6 @@
                     document.getElementById("login-page").style.display = "none";
                     document.getElementById("dashboard-page").style.display = "block";
                 }).catch(err => {
-                    console.log("Error:", err);
                     document.getElementById("login-page").style.display = "none";
                     document.getElementById("dashboard-page").style.display = "block";
                 });
@@ -171,14 +192,14 @@
             qr.style.display = (qr.style.display === "block") ? "none" : "block";
         }
 
-        function payViaUPI() {
-            // Save payment click info to Firebase
+        function payViaUPI(amount, planName) {
             db.collection("recharge_clicks").add({
                 mobile: userMobile || "Guest",
-                amount: "500",
+                amount: amount,
+                plan: planName,
                 date: new Date().toLocaleString()
             });
-            window.location.href = "upi://pay?pa=yourvpa@upi&pn=NextGWiFi&am=500&cu=INR";
+            window.location.href = "upi://pay?pa=owner@upi&pn=NextGWiFi&am=" + amount + "&cu=INR";
         }
 
         function sendComplaint(type) {
@@ -194,10 +215,7 @@
 
         function changeLanguage(lang) {
             if(lang === 'en') {
-                document.getElementById('txt-plan-title').innerText = "📶 Your Active Plan";
-                document.getElementById('txt-validity-label').innerText = "Validity:";
-                document.getElementById('txt-validity').innerText = "28 Days Remaining";
-                document.getElementById('btn-upi').innerText = "💳 Pay via Direct UPI App";
+                document.getElementById('txt-plan-title').innerText = "📶 Select Plan & Recharge";
                 document.getElementById('btn-qr-txt').innerText = "📱 Scan QR Code to Pay";
                 document.getElementById('txt-complaint-title').innerText = "🚨 Instant Complaint";
                 document.getElementById('c1').innerText = "🔴 Red light on Router";
@@ -206,10 +224,7 @@
                 document.getElementById('c4').innerText = "🚀 Internet Speed is Slow";
                 document.getElementById('c5').innerText = "🛠️ Router Device is Damaged";
             } else if(lang === 'ur') {
-                document.getElementById('txt-plan-title').innerText = "📶 آپ کا ایکٹو پلان";
-                document.getElementById('txt-validity-label').innerText = "میعاد:";
-                document.getElementById('txt-validity').innerText = "28 دن باقی ہیں";
-                document.getElementById('btn-upi').innerText = "💳 براہ راست UPI سے ریچارج کریں";
+                document.getElementById('txt-plan-title').innerText = "📶 پلان منتخب کریں اور ریچارج کریں";
                 document.getElementById('btn-qr-txt').innerText = "📱 QR کوڈ اسکین کرکے ادائیگی کریں";
                 document.getElementById('txt-complaint-title').innerText = "🚨 فوری شکایت";
                 document.getElementById('c1').innerText = "🔴 راؤٹر پر ریڈ لائٹ آ رہی ہے";
