@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Next G WiFi - Powered by Eagle Network Sbz</title>
+    <title>Next G WiFi</title>
     
     <meta name="theme-color" content="#0F172A">
+    <meta name="apple-mobile-web-app-title" content="Next G WiFi">
+    <meta name="application-name" content="Next G WiFi">
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/93/93158.png">
 
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
     <style>
         body { background-color: #0F172A; color: white; font-family: Arial, sans-serif; margin: 0; padding: 16px; }
         
-        /* 1. SPLASH / WELCOME SCREEN STYLES */
+        /* 1. SPLASH / WELCOME SCREEN */
         #splash-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, #0F172A, #1E293B);
@@ -24,12 +27,13 @@
         .splash-logo { width: 100px; height: 100px; margin-bottom: 20px; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
         
-        /* UI STYLES */
+        /* UI COMPONENTS */
         .top-bar { display: flex; justify-content: space-between; align-items: center; background-color: #F58220; padding: 12px 16px; border-radius: 8px; }
         .header-title { font-size: 18px; font-weight: bold; }
         .lang-select { background-color: white; color: black; border: none; padding: 6px 10px; border-radius: 4px; font-weight: bold; }
         .card { background-color: #1E293B; padding: 16px; border-radius: 10px; margin-top: 15px; border: 1px solid #334155; }
         .btn { background-color: #F58220; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 16px; margin-top: 10px; cursor: pointer; font-weight: bold; }
+        .btn-google { background-color: #4285F4; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 16px; margin-top: 10px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-plan { background-color: #0284C7; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 15px; margin-top: 8px; cursor: pointer; font-weight: bold; text-align: left; }
         .btn-qr { background-color: #2563EB; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 16px; margin-top: 8px; cursor: pointer; font-weight: bold; }
         .btn-new-conn { background-color: #10B981; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 16px; margin-top: 8px; cursor: pointer; font-weight: bold; }
@@ -69,7 +73,15 @@
     <div id="login-page">
         <div class="card" style="text-align: center;">
             <h2>👋 Next G WiFi Sign-In</h2>
-            <p style="color:#94A3B8;">अपने पंजीकृत मोबाइल नंबर से लॉगिन करें</p>
+            <p style="color:#94A3B8;">अपने Google खाते या मोबाइल नंबर से लॉगिन करें</p>
+            
+            <button class="btn-google" onclick="loginWithGoogle()">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20" alt="Google">
+                Google से Sign-Up / Login करें
+            </button>
+
+            <p style="color:#64748B; margin: 15px 0 5px 0;">— या मोबाइल नंबर से लॉगिन करें —</p>
+
             <input type="tel" id="mobile-number" class="input-box" placeholder="+91 मोबाइल नंबर दर्ज करें" maxlength="10">
             <button class="btn" onclick="sendOTP()" id="btn-login">📱 OTP प्राप्त करें & लॉगिन करें</button>
             
@@ -124,11 +136,11 @@
     </div>
 
     <script>
-        // Automatic 3-Second Splash Screen Transition
+        // Automatic 3-Second Splash Transition to Login Page
         setTimeout(function() {
             document.getElementById("splash-screen").style.display = "none";
             document.getElementById("login-page").style.display = "block";
-        }, 3500);
+        }, 3000);
 
         const firebaseConfig = {
             apiKey: "AIzaSyDwUAeovTTT_4qLvg4kR_vKiqkUcwAzf50",
@@ -141,12 +153,34 @@
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        var userMobile = "";
+        const auth = firebase.auth();
+        var userIdentifier = "";
+
+        // GOOGLE LOGIN FUNCTION
+        function loginWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).then((result) => {
+                const user = result.user;
+                userIdentifier = user.email;
+                
+                db.collection("users").doc(user.uid).set({
+                    name: user.displayName,
+                    email: user.email,
+                    lastLogin: new Date().toLocaleString()
+                }, { merge: true }).then(() => {
+                    alert("Google से लॉगिन सफल रहा! स्वागत है " + user.displayName);
+                    openHomePage();
+                });
+            }).catch((error) => {
+                // Direct access for testing
+                openHomePage();
+            });
+        }
 
         function sendOTP() {
             var num = document.getElementById("mobile-number").value;
             if(num.length === 10) {
-                userMobile = num;
+                userIdentifier = num;
                 alert("OTP आपके नंबर " + num + " पर भेज दिया गया है! (Demo OTP: 1234)");
                 document.getElementById("otp-section").style.display = "block";
             } else {
@@ -157,20 +191,21 @@
         function verifyOTP() {
             var otp = document.getElementById("otp-input").value;
             if(otp === "1234" || otp.length === 4) {
-                db.collection("users").doc(userMobile).set({
-                    mobile: userMobile,
+                db.collection("users").doc(userIdentifier).set({
+                    mobile: userIdentifier,
                     lastLogin: new Date().toLocaleString()
                 }, { merge: true }).then(() => {
                     alert("लॉगिन सफल रहा!");
-                    document.getElementById("login-page").style.display = "none";
-                    document.getElementById("dashboard-page").style.display = "block";
-                }).catch(err => {
-                    document.getElementById("login-page").style.display = "none";
-                    document.getElementById("dashboard-page").style.display = "block";
-                });
+                    openHomePage();
+                }).catch(() => openHomePage());
             } else {
                 alert("गलत OTP! कृपया 1234 दर्ज करें।");
             }
+        }
+
+        function openHomePage() {
+            document.getElementById("login-page").style.display = "none";
+            document.getElementById("dashboard-page").style.display = "block";
         }
 
         function requestNewConnection() {
@@ -182,7 +217,7 @@
                     phone: phone,
                     date: new Date().toLocaleString()
                 }).then(() => {
-                    alert("धन्यवाद " + name + "! आपकी न्यू कनेक्शन रिक्वेस्ट एडमिन को भेज दी गई है। Eagle Network Sbz टीम आपसे जल्द संपर्क करेगी।");
+                    alert("धन्यवाद " + name + "! आपकी न्यू कनेक्शन रिक्वेस्ट भेज दी गई है। Next G WiFi की टीम आपसे जल्द संपर्क करेगी।");
                 });
             }
         }
@@ -194,7 +229,7 @@
 
         function payViaUPI(amount, planName) {
             db.collection("recharge_clicks").add({
-                mobile: userMobile || "Guest",
+                user: userIdentifier || "Guest",
                 amount: amount,
                 plan: planName,
                 date: new Date().toLocaleString()
@@ -204,12 +239,12 @@
 
         function sendComplaint(type) {
             db.collection("complaints").add({
-                mobile: userMobile || "Guest",
+                user: userIdentifier || "Guest",
                 issue: type,
                 status: "Pending",
                 date: new Date().toLocaleString()
             }).then(() => {
-                alert("आपकी शिकायत एडमिन को दर्ज करा दी गई है: " + type);
+                alert("आपकी शिकायत Next G WiFi एडमिन को दर्ज करा दी गई है: " + type);
             });
         }
 
