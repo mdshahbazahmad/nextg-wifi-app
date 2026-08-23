@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Next G Wi-Fi - Eagle Network Sbz</title>
+    <meta name="theme-color" content="#0F172A">
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background-color: #0F172A; color: white; margin: 0; padding: 12px; padding-bottom: 25px; }
+
+        /* Splash Eagle Loader Animation */
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #0F172A, #1E293B);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9999; text-align: center;
+        }
+        .eagle-loader {
+            width: 110px; height: 110px; border-radius: 50%;
+            border: 3px solid #F58220; object-fit: cover; background-color: white;
+            box-shadow: 0 0 25px rgba(245, 130, 32, 0.6);
+            animation: eagleFly 1.8s infinite ease-in-out alternate;
+        }
+        @keyframes eagleFly {
+            0% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-12px) scale(1.08); }
+            100% { transform: translateY(0px) scale(1); }
+        }
+
+        /* Top Bar Layout Based on Screenshot */
+        .top-bar-new {
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: #1E293B; padding: 10px 14px; border-radius: 12px;
+            border: 1px solid #334155; position: relative; min-height: 75px;
+        }
+        .header-left-box { display: flex; align-items: center; gap: 12px; }
+        .three-line-btn { font-size: 28px; cursor: pointer; color: #F58220; font-weight: bold; }
+
+        /* Logo At Red Circle Location */
+        .header-logo-container {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .app-brand-logo { 
+            width: 44px; height: 44px; border-radius: 50%; 
+            border: 2px solid #F58220; object-fit: cover; background: white;
+            box-shadow: 0 0 10px rgba(245, 130, 32, 0.4);
+        }
+
+        /* Bigger Bold Highlighted Name Under Logo */
+        .app-brand-title {
+            font-weight: 900; font-size: 16px; color: #F58220; 
+            margin-top: 4px; letter-spacing: 0.8px;
+            text-shadow: 0 0 8px rgba(245, 130, 32, 0.6);
+            text-transform: uppercase;
+        }
+
+        .header-right { display: flex; align-items: center; }
+        .user-dp-box { display: flex; align-items: center; gap: 6px; background: #334155; padding: 5px 10px; border-radius: 20px; cursor: pointer; border: 1px solid #475569; }
+        .user-avatar-img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1.5px solid #F58220; background: white; }
+
+        /* Card & UI Components */
+        .card { background-color: #1E293B; padding: 18px; border-radius: 12px; margin-top: 12px; border: 1px solid #334155; }
+        .btn-primary { background-color: #F58220; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
+        .btn-whatsapp { background-color: #25D366; color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-google-white { background-color: #FFFFFF; color: #1F2937; border: 1px solid #D1D5DB; padding: 12px; width: 100%; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+
+        .moving-banner {
+            background: linear-gradient(90deg, #1E3A8A, #6D28D9, #0284C7, #BE123C);
+            background-size: 300% 300%; animation: gradientShift 6s ease infinite;
+            padding: 12px 14px; border-radius: 12px; margin-top: 12px;
+            font-size: 13px; font-weight: bold; white-space: nowrap; overflow: hidden;
+            border: 1px solid #38BDF8; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2);
+        }
+        @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .marquee-text { display: inline-flex; align-items: center; gap: 20px; animation: marquee 12s linear infinite; }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+        .grid-box { background: #1E293B; border: 1px solid #334155; border-radius: 12px; padding: 16px 12px; text-align: center; cursor: pointer; transition: transform 0.2s; }
+        .grid-box:active { transform: scale(0.97); }
+        .grid-box i { font-size: 26px; display: block; margin-bottom: 6px; font-style: normal; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.88); z-index: 10000; justify-content: center; align-items: center; padding: 16px; }
+        .modal-content { background: #1E293B; width: 100%; max-width: 420px; border-radius: 12px; padding: 18px; border: 1px solid #334155; position: relative; max-height: 88vh; overflow-y: auto; }
+        .close-btn { position: absolute; top: 12px; right: 15px; font-size: 22px; cursor: pointer; color: #94A3B8; }
+
+        .input-box, .textarea-box, .select-box { width: 100%; padding: 10px; margin-top: 6px; border-radius: 6px; border: 1px solid #334155; background: #0F172A; color: white; }
+        .textarea-box { height: 75px; resize: none; }
+        .complaint-btn { background-color: #0F172A; color: white; border: 1px solid #F58220; padding: 10px; width: 100%; border-radius: 6px; margin-top: 8px; text-align: left; cursor: pointer; }
+        .plan-btn { background: #0284C7; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-size: 14px; font-weight: bold; margin-top: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+
+        /* Remote Router Switch */
+        .switch-container { display: flex; justify-content: space-between; align-items: center; background: #0F172A; padding: 12px; border-radius: 8px; border: 1px solid #334155; margin-top: 10px; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #EF4444; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #10B981; }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        .device-item { display: flex; justify-content: space-between; align-items: center; background: #0F172A; padding: 8px 10px; border-radius: 6px; border: 1px solid #334155; margin-top: 6px; font-size: 12px; }
+        .block-checkbox { accent-color: #EF4444; transform: scale(1.2); cursor: pointer; }
+
+        .adsterra-ad-wrapper { margin-top: 18px; width: 100%; display: flex; justify-content: center; align-items: center; background: #0F172A; border-radius: 8px; padding: 6px 0; border: 1px solid #334155; }
+        #login-page, #dashboard-page { display: none; }
+        #toast-box { position: fixed; bottom: -80px; left: 50%; transform: translateX(-50%); background: #1E293B; color: #10B981; border: 1.5px solid #10B981; padding: 12px 20px; border-radius: 30px; font-size: 14px; font-weight: bold; z-index: 20000; transition: bottom 0.4s ease-in-out; text-align: center; }
+        #toast-box.show { bottom: 30px; }
+    </style>
+</head>
+<body>
+
+    <script>
+        const LOGO_URL = "https://i.ibb.co/RTV3fFZ0/IMG-20260820-192708.jpg";
+        const OPERATOR_WHATSAPP = "919876543210";
+    </script>
+
+    <!-- Flying Eagle Splash Loader -->
+    <div id="splash-screen">
+        <img id="splash-logo-img" class="eagle-loader" alt="Eagle Logo">
+        <h1 style="color:#F58220; margin: 16px 0 0 0; font-size: 28px;">Next G Wi-Fi</h1>
+        <p style="color:#FFF; font-size:14px; margin-top:6px;">Connecting High-Speed Network...</p>
+        <p style="color:#94A3B8; font-size:12px; margin-top:25px;">🦅 Eagle Network Sbz</p>
+    </div>
+
+    <!-- Top Navigation Bar -->
+    <div class="top-bar-new">
+        <!-- Left Side: 3-Lines Menu + Logo placed exactly where marked -->
+        <div class="header-left-box">
+            <div class="three-line-btn" onclick="openModal('side-menu-modal')" title="Menu">☰</div>
+            
+            <div class="header-logo-container">
+                <img id="top-app-logo" class="app-brand-logo" alt="Logo">
+                <span class="app-brand-title">Next G Wi-Fi</span>
+            </div>
+        </div>
+
+        <!-- Right Side: Profile DP & Name -->
+        <div class="header-right">
+            <div class="user-dp-box" onclick="openModal('app-settings-modal')">
+                <img id="header-user-img" class="user-avatar-img" alt="DP">
+                <span id="header-user-name" style="font-size:12px; font-weight:bold; color:white;">Profile</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIN PAGE -->
+    <div id="login-page">
+        <div class="card" style="text-align: center;">
+            <h2 style="margin-top:5px; font-size:20px;">👋 Sign-In to Next G Wi-Fi</h2>
+            <button class="btn-google-white" onclick="loginWithGoogle()">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20" alt="Google">
+                <span>Sign-In with Google</span>
+            </button>
+
+            <p style="color:#64748B; margin: 16px 0 8px 0; font-size:12px;">— OR Mobile Number —</p>
+            <input type="tel" id="mobile-number" class="input-box" placeholder="+91 Mobile Number" maxlength="10">
+            <button class="btn-primary" style="margin-top:10px;" onclick="sendOTP()">📱 Sign-In / Register</button>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD -->
+    <div id="dashboard-page">
+
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#0F172A; padding:8px 12px; border-radius:8px; border:1px solid #334155; margin-top:10px; font-size:12px;">
+            <span style="color:#38BDF8;">📅 Date: <strong id="live-date">---</strong></span>
+            <span style="color:#F58220;">⏰ Time: <strong id="live-time">---</strong></span>
+        </div>
+
+        <div class="card" style="background: linear-gradient(135deg, #1E293B, #0F172A); border-left: 4px solid #10B981;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <small style="color:#94A3B8; font-size:11px;">Active Plan</small>
+                    <h3 style="margin:2px 0; color:#38BDF8; font-size:18px;" id="val-plan-name">No Active Plan</h3>
+                </div>
+                <span id="val-plan-status" style="background:#EF4444; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:bold;">Inactive</span>
+            </div>
+            <hr style="border:0.5px solid #334155; margin:10px 0;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:12px; color:#E2E8F0;" id="val-plan-date">⏳ Please Recharge</span>
+                <button class="btn-primary" style="width:auto; padding:6px 14px; font-size:12px;" onclick="openModal('plans-modal')">⚡ Recharge</button>
+            </div>
+        </div>
+
+        <!-- Animated Moving Banner -->
+        <div class="moving-banner">
+            <div class="marquee-text">
+                <span>🚀 <strong>Special Offer!</strong> Get 15 Days Extra Internet on ₹4,000 Plan!</span>
+                <span>⚡ <strong>High-Speed Connectivity:</strong> 100 Mbps Unlimited Broadband!</span>
+                <span>🦅 <strong>Eagle Network Sbz:</strong> Always at your service 24x7!</span>
+            </div>
+        </div>
+
+        <!-- Grid Buttons -->
+        <div class="grid-container">
+            <div class="grid-box" onclick="openModal('plans-modal')">
+                <i>📶</i>
+                <div style="font-size:13px; font-weight:bold;" id="lbl-menu-plans">Recharge Plans</div>
+            </div>
+            <div class="grid-box" onclick="openModal('new-connection-modal')">
+                <i>✨</i>
+                <div style="font-size:13px; font-weight:bold;" id="lbl-menu-new">New Connection</div>
+            </div>
+            <div class="grid-box" onclick="openModal('router-modal')">
+                <i>⚙️</i>
+                <div style="font-size:13px; font-weight:bold;" id="lbl-menu-router">Router Settings</div>
+            </div>
+            <div class="grid-box" onclick="openModal('complaint-modal')">
+                <i>🚨</i>
+                <div style="font-size:13px; font-weight:bold;" id="lbl-menu-complaint">Report Issue</div>
+            </div>
+            <div class="grid-box" style="grid-column: span 2;" onclick="openModal('history-modal')">
+                <i>📜</i>
+                <div style="font-size:13px; font-weight:bold;" id="lbl-menu-history">Recharge History</div>
+            </div>
+        </div>
+
+        <!-- Adsterra Ad Placement -->
+        <div class="adsterra-ad-wrapper">
+            <script type="text/javascript">
+                atOptions = {
+                    'key' : 'b8d2a4db4db82272442da1c8b4072e65',
+                    'format' : 'iframe',
+                    'height' : 50,
+                    'width' : 320,
+                    'params' : {}
+                };
+            </script>
+            <script type="text/javascript" src="https://www.highrevenueformat.com/b8d2a4db4db82272442da1c8b4072e65/invoke.js"></script>
+        </div>
+
+    </div>
+
+    <!-- 3-LINES SIDE MENU WITH REMOTE ROUTER CONTROL & LANGUAGE SELECTOR -->
+    <div id="side-menu-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('side-menu-modal')">✕</span>
+            <h3 style="margin-top:0; color:#F58220;">☰ Quick Options & Remote Control</h3>
+            
+            <!-- Anywhere Remote Router Lock / Wi-Fi ON-OFF -->
+            <div class="switch-container">
+                <div>
+                    <strong style="color:#F58220; font-size:13px;">📶 Router Wi-Fi Lock / ON-OFF</strong>
+                    <br><small style="color:#94A3B8; font-size:11px;" id="remote-status-text">Router Wi-Fi is ON (Online)</small>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="remote-router-toggle" checked onchange="toggleRemoteRouter(this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <!-- Language Selector -->
+            <label style="font-size:12px; color:#38BDF8; font-weight:bold; margin-top:12px; display:block;">🌐 Select Language / भाषा चुनें:</label>
+            <select class="select-box" style="margin-bottom:12px;" onchange="changeLanguage(this.value)">
+                <option value="en">English</option>
+                <option value="hi">हिंदी (Hindi)</option>
+                <option value="ur">اردو (Urdu)</option>
+            </select>
+
+            <button class="complaint-btn" onclick="closeModal('side-menu-modal'); openModal('app-settings-modal');">📱 Profile & Upload DP</button>
+            <button class="complaint-btn" onclick="closeModal('side-menu-modal'); openModal('router-modal');">⚙️ Router Settings & Connected Devices</button>
+            <button class="complaint-btn" onclick="closeModal('side-menu-modal'); openModal('plans-modal');">📶 Recharge Plans</button>
+            <button class="complaint-btn" onclick="closeModal('side-menu-modal'); openModal('complaint-modal');">🚨 Support & Complaints</button>
+            <button class="btn-primary" style="background:#EF4444; margin-top:15px;" onclick="location.reload()">🚪 Sign Out</button>
+        </div>
+    </div>
+
+    <!-- THANK YOU POPUP MODAL -->
+    <div id="thank-you-modal" class="modal">
+        <div class="modal-content" style="text-align: center; border: 2px solid #10B981;">
+            <div style="font-size: 50px; margin-bottom: 5px;">🎉</div>
+            <h2 style="color: #10B981; margin: 0;">THANK YOU VERY MUCH!</h2>
+            <h3 style="color: #F58220; margin: 8px 0 12px 0;">Welcome to Next G Wi-Fi</h3>
+            <p style="font-size: 13px; color: #E2E8F0; line-height: 1.5;">You are successfully logged in! Powered by <strong>Eagle Network Sbz</strong>.</p>
+            <button class="btn-primary" style="margin-top: 15px; background: #10B981;" onclick="closeModal('thank-you-modal')">🚀 Get Started</button>
+        </div>
+    </div>
+
+    <!-- ROUTER SETTINGS MODAL -->
+    <div id="router-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('router-modal')">✕</span>
+            <h3 style="margin-top:0; color:#F58220;">⚙️ Router Control & Live Devices</h3>
+            
+            <div style="background:#0F172A; padding:12px; border-radius:8px; font-size:13px; border:1px solid #334155;">
+                <p style="margin:4px 0;"><strong>Router Status:</strong> <span style="color:#10B981;" id="modal-router-state">Online (Optimal)</span></p>
+                <p style="margin:6px 0;"><strong>Download Speed:</strong> <span style="color:#38BDF8; font-weight:bold;" id="live-speed-val">98.4 Mbps</span></p>
+                <p style="margin:6px 0;"><strong>Upload Speed:</strong> <span style="color:#10B981; font-weight:bold;" id="live-upload-val">94.1 Mbps</span></p>
+                <p style="margin:6px 0;"><strong>Ping Latency:</strong> <span style="color:#F58220; font-weight:bold;" id="live-ping-val">11 ms</span></p>
+            </div>
+
+            <h4 style="margin:12px 0 6px 0; color:#38BDF8; font-size:13px;">📱 Connected Devices (Check to Block):</h4>
+            <div class="device-item">
+                <div><strong>Samsung Galaxy S23</strong><br><small style="color:#94A3B8;">IP: 192.168.1.102</small></div>
+                <label style="color:#EF4444; font-weight:bold;"><input type="checkbox" class="block-checkbox" onchange="toggleBlockDevice('Samsung Galaxy S23', this.checked)"> Block</label>
+            </div>
+            <div class="device-item">
+                <div><strong>Smart LED TV</strong><br><small style="color:#94A3B8;">IP: 192.168.1.105</small></div>
+                <label style="color:#EF4444; font-weight:bold;"><input type="checkbox" class="block-checkbox" onchange="toggleBlockDevice('Smart LED TV', this.checked)"> Block</label>
+            </div>
+
+            <h4 style="margin:14px 0 6px 0; color:#F58220; font-size:14px;">🔑 Remote Change Wi-Fi Name & Password:</h4>
+            <input type="text" id="wifi-ssid" class="input-box" placeholder="New Wi-Fi SSID Name">
+            <input type="password" id="wifi-pass" class="input-box" placeholder="New Wi-Fi Password">
+            <button class="btn-primary" style="margin-top:10px;" onclick="updateWifiSettings()">💾 Update Router Remotely</button>
+        </div>
+    </div>
+
+    <!-- PROFILE MODAL -->
+    <div id="app-settings-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('app-settings-modal')">✕</span>
+            <h3 style="margin-top:0; color:#F58220;">📱 Customer Profile & DP Upload</h3>
+            
+            <label style="font-size:12px; color:#F58220; font-weight:bold; display:block;">🖼️ Select Profile Photo from Gallery:</label>
+            <input type="file" id="dp-file-input" accept="image/*" class="input-box" onchange="previewSelectedDP(this)">
+            
+            <div style="text-align: center; margin-top: 10px;">
+                <img id="preview-dp-img" src="" style="width: 70px; height: 70px; border-radius: 50%; border: 2px solid #F58220; display: none; margin: 0 auto; object-fit: cover;">
+            </div>
+
+            <label style="font-size:12px; color:#94A3B8; margin-top:10px; display:block;">Customer Name:</label>
+            <input type="text" id="prof-name-input" class="input-box" placeholder="Your Name">
+            
+            <button class="btn-primary" style="margin-top:15px;" onclick="saveProfile()">💾 Save & Upload DP</button>
+        </div>
+    </div>
+
+    <!-- NEW CONNECTION MODAL -->
+    <div id="new-connection-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('new-connection-modal')">✕</span>
+            <h3 style="margin-top:0; color:#F58220;">✨ Request New Connection</h3>
+            <input type="text" id="nc-name" class="input-box" placeholder="Full Name">
+            <input type="tel" id="nc-phone" class="input-box" placeholder="Mobile Number" maxlength="10">
+            <textarea id="nc-address" class="textarea-box" placeholder="Installation Address..."></textarea>
+            <button class="btn-primary" style="margin-top:15px;" onclick="submitNewConnection()">📝 Submit Application</button>
+        </div>
+    </div>
+
+    <!-- COMPLAINT MODAL -->
+    <div id="complaint-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('complaint-modal')">✕</span>
+            <h3 style="margin-top:0; color:#F58220;">🚨 Report Issue</h3>
+            <button class="complaint-btn" onclick="triggerAlertAndSend('🔴 Red Light on Router')">🔴 Red Light on Router</button>
+            <button class="complaint-btn" onclick="triggerAlertAndSend('✂️ Wire/Cable Cut')">✂️ Cable Cut / Broken</button>
+            <textarea id="custom-complaint-text" class="textarea-box" style="margin-top:10px;" placeholder="Type custom complaint..."></textarea>
+            <button class="btn-primary" style="margin-top:8px;" onclick="sendCustomComplaint()">📩 Send Complaint</button>
+            <button class="btn-whatsapp" id="whatsapp-btn" style="display:none;" onclick="openWhatsAppDirect()">💬 Send via WhatsApp</button>
+        </div>
+    </div>
+
+    <!-- RECHARGE PLANS MODAL -->
+    <div id="plans-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('plans-modal')">✕</span>
+            <h3 style="margin-top:0; color:#F58220;">📶 Recharge Plans</h3>
+            <div id="dynamic-plans-list"></div>
+        </div>
+    </div>
+
+    <!-- RECHARGE HISTORY MODAL -->
+    <div id="history-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('history-modal')">✕</span>
+            <h3 style="margin-top:0; color:#F58220;">📜 Recharge History</h3>
+            <div id="history-list"></div>
+        </div>
+    </div>
+
+    <div id="toast-box"><span>✅</span> <span id="toast-msg">Success</span></div>
+
+    <script>
+        var lastSubmittedIssue = "";
+        var currentUser = "Customer";
+        var selectedDPBase64 = "";
+
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById("splash-logo-img").src = LOGO_URL;
+            document.getElementById("top-app-logo").src = LOGO_URL;
+            document.getElementById("header-user-img").src = LOGO_URL;
+        });
+
+        window.onload = function() {
+            setTimeout(() => {
+                document.getElementById("splash-screen").style.display = "none";
+                document.getElementById("login-page").style.display = "block";
+            }, 2000);
+            startRealtimeClock();
+        };
+
+        function startRealtimeClock() {
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById("live-date").innerText = now.toLocaleDateString();
+                document.getElementById("live-time").innerText = now.toLocaleTimeString();
+
+                let dl = (92 + Math.random() * 8).toFixed(1);
+                let ul = (88 + Math.random() * 8).toFixed(1);
+                let ping = Math.floor(10 + Math.random() * 5);
+                
+                if(document.getElementById("live-speed-val")) {
+                    document.getElementById("live-speed-val").innerText = dl + " Mbps";
+                    document.getElementById("live-upload-val").innerText = ul + " Mbps";
+                    document.getElementById("live-ping-val").innerText = ping + " ms";
+                }
+            }, 1000);
+        }
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCVsmFa6Xr-_EfUqh_ZS6tmzBwcdMZq0JA",
+            authDomain: "universal-portal-dashboard.firebaseapp.com",
+            projectId: "universal-portal-dashboard",
+            storageBucket: "universal-portal-dashboard.firebasestorage.app",
+            messagingSenderId: "403036962443",
+            appId: "1:403036962443:web:52b233377303ecb1c3de8e"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        function showToast(msg) {
+            var toast = document.getElementById("toast-box");
+            document.getElementById("toast-msg").innerHTML = msg;
+            toast.classList.add("show");
+            setTimeout(() => { toast.classList.remove("show"); }, 3800);
+        }
+
+        /* Remote Router Toggle Feature (Office/Anywhere Control) */
+        function toggleRemoteRouter(isPoweredOn) {
+            let statusStr = isPoweredOn ? "ON (Online)" : "OFF (Disabled/Locked)";
+            document.getElementById("remote-status-text").innerText = "Router Wi-Fi is " + statusStr;
+            document.getElementById("modal-router-state").innerText = isPoweredOn ? "Online (Optimal)" : "Locked / OFF";
+            document.getElementById("modal-router-state").style.color = isPoweredOn ? "#10B981" : "#EF4444";
+
+            db.collection("remote_routers").doc(currentUser).set({
+                wifi_status: isPoweredOn ? "ON" : "OFF",
+                updated_at: new Date().toLocaleString()
+            }, { merge: true });
+
+            showToast(`Remote Router Wi-Fi turned <strong>${statusStr}</strong> successfully!`);
+        }
+
+        function previewSelectedDP(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    selectedDPBase64 = e.target.result;
+                    var prevImg = document.getElementById("preview-dp-img");
+                    prevImg.src = selectedDPBase64;
+                    prevImg.style.display = "block";
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function loginUserProcess(userIdentifier) {
+            document.getElementById("splash-screen").style.display = "flex";
+            setTimeout(() => {
+                document.getElementById("splash-screen").style.display = "none";
+                currentUser = userIdentifier;
+                document.getElementById("login-page").style.display = "none";
+                document.getElementById("dashboard-page").style.display = "block";
+                document.getElementById("header-user-name").innerText = currentUser;
+
+                db.collection("users").doc(currentUser).get().then((doc) => {
+                    if (doc.exists && doc.data().photo) {
+                        document.getElementById("header-user-img").src = doc.data().photo;
+                    }
+                });
+
+                openModal('thank-you-modal');
+                loadHistory();
+                loadDynamicPlans();
+            }, 1500);
+        }
+
+        function sendOTP() {
+            var num = document.getElementById("mobile-number").value;
+            if(num.length === 10) loginUserProcess(num);
+            else showToast("Please enter a valid 10-digit number!");
+        }
+
+        function loginWithGoogle() { loginUserProcess("User_" + Math.floor(1000 + Math.random() * 9000)); }
+
+        function toggleBlockDevice(deviceName, isBlocked) {
+            let status = isBlocked ? "BLOCKED" : "UNBLOCKED";
+            db.collection("blocked_devices").doc(currentUser + "_" + deviceName).set({
+                user: currentUser, device: deviceName, isBlocked: isBlocked, updated_at: new Date().toLocaleString()
+            }, { merge: true });
+
+            showToast(`Device <strong>${deviceName}</strong> is now ${status}!`);
+        }
+
+        function submitNewConnection() {
+            var name = document.getElementById("nc-name").value;
+            var phone = document.getElementById("nc-phone").value;
+            var address = document.getElementById("nc-address").value;
+
+            if(!name || !phone || !address) { showToast("⚠️ Please fill all fields!"); return; }
+
+            db.collection("new_connections").add({
+                name: name, phone: phone, address: address, status: "Pending", date: new Date().toLocaleString()
+            }).then(() => { closeModal('new-connection-modal'); openModal('thank-you-modal'); });
+        }
+
+        function triggerAlertAndSend(issueMsg) {
+            lastSubmittedIssue = issueMsg;
+            db.collection("complaints").add({ user: currentUser, issue: issueMsg, status: "Pending", date: new Date().toLocaleString() });
+            document.getElementById("whatsapp-btn").style.display = "flex";
+            showToast("Issue logged & sent to operator!");
+        }
+
+        function sendCustomComplaint() {
+            var text = document.getElementById("custom-complaint-text").value;
+            if(!text) { showToast("Please enter description!"); return; }
+            triggerAlertAndSend(text);
+            document.getElementById("custom-complaint-text").value = "";
+        }
+
+        function openWhatsAppDirect() {
+            var url = `https://wa.me/${OPERATOR_WHATSAPP}?text=${encodeURIComponent("*Next G Wi-Fi Support*\n*User:* " + currentUser + "\n*Issue:* " + lastSubmittedIssue)}`;
+            window.open(url, '_blank');
+        }
+
+        function loadDynamicPlans() {
+            db.collection("operator_plans").get().then((snapshot) => {
+                let html = "";
+                if(snapshot.empty) {
+                    html = `
+                        <button class="plan-btn" onclick="payViaUPI(250, '₹250 Plan (15 Days)')"><span>🟢 ₹250 (15 Days)</span> <span>Pay ❯</span></button>
+                        <button class="plan-btn" style="background:#F58220;" onclick="payViaUPI(500, '₹500 Plan (1 Month)')"><span>🔵 ₹500 (1 Month)</span> <span>Pay ❯</span></button>
+                        <button class="plan-btn" style="background:#7C3AED;" onclick="payViaUPI(4000, '₹4,000 Plan (6 Months)')"><span>🟣 ₹4,000 (6 Months)</span> <span>Pay ❯</span></button>
+                    `;
+                } else {
+                    snapshot.forEach((doc) => {
+                        let p = doc.data();
+                        html += `<button class="plan-btn" onclick="payViaUPI(${p.price}, '${p.name}')"><span>🟢 ${p.name} (₹${p.price}) - ${p.validity}</span> <span>Pay ❯</span></button>`;
+                    });
+                }
+                document.getElementById("dynamic-plans-list").innerHTML = html;
+            });
+        }
+
+        function payViaUPI(amount, planName) {
+            let nowStr = new Date().toLocaleString();
+            db.collection("recharges").add({ user: currentUser, amount: amount, plan: planName, status: "Active", date: nowStr });
+            document.getElementById("val-plan-name").innerText = planName;
+            document.getElementById("val-plan-status").innerText = "Active";
+            document.getElementById("val-plan-status").style.background = "#10B981";
+            document.getElementById("val-plan-date").innerText = "⏳ Recharge Date: " + nowStr;
+            window.location.href = "upi://pay?pa=owner@upi&pn=NextGWiFi&am=" + amount + "&cu=INR";
+        }
+
+        function loadHistory() {
+            db.collection("recharges").where("user", "==", currentUser).get().then((querySnapshot) => {
+                let html = "";
+                querySnapshot.forEach((doc) => {
+                    let data = doc.data();
+                    html += `<p style="padding:8px; background:#0F172A; border-radius:6px; margin:4px 0;">⚡ ${data.plan} - <span style="color:#10B981;">${data.status}</span><br><small style="color:#94A3B8;">${data.date}</small></p>`;
+                });
+                document.getElementById("history-list").innerHTML = html || "<p style='color:#94A3B8;'>No past recharges found.</p>";
+            });
+        }
+
+        function saveProfile() {
+            var name = document.getElementById("prof-name-input").value || currentUser;
+            var updateObj = { name: name };
+            if(selectedDPBase64) {
+                updateObj.photo = selectedDPBase64;
+                document.getElementById("header-user-img").src = selectedDPBase64;
+            }
+
+            db.collection("users").doc(currentUser).set(updateObj, { merge: true });
+            document.getElementById("header-user-name").innerText = name;
+            showToast("Profile & DP updated successfully!");
+            closeModal('app-settings-modal');
+        }
+
+        function updateWifiSettings() {
+            var ssid = document.getElementById("wifi-ssid").value;
+            var pass = document.getElementById("wifi-pass").value;
+
+            if(!ssid || !pass) { showToast("Please fill SSID and Password!"); return; }
+
+            db.collection("router_settings").doc(currentUser).set({ wifi_name: ssid, wifi_password: pass, updated_at: new Date().toLocaleString() }, { merge: true });
+            showToast("Router settings updated remotely!");
+            closeModal('router-modal');
+        }
+
+        function changeLanguage(lang) {
+            if(lang === "hi") {
+                document.getElementById("lbl-menu-plans").innerText = "रिचार्ज प्लान्स";
+                document.getElementById("lbl-menu-new").innerText = "नया कनेक्शन";
+                document.getElementById("lbl-menu-router").innerText = "राउटर सेटिंग्स";
+                document.getElementById("lbl-menu-complaint").innerText = "शिकायत दर्ज करें";
+                document.getElementById("lbl-menu-history").innerText = "रिचार्ज हिस्ट्री";
+            } else {
+                document.getElementById("lbl-menu-plans").innerText = "Recharge Plans";
+                document.getElementById("lbl-menu-new").innerText = "New Connection";
+                document.getElementById("lbl-menu-router").innerText = "Router Settings";
+                document.getElementById("lbl-menu-complaint").innerText = "Report Issue";
+                document.getElementById("lbl-menu-history").innerText = "Recharge History";
+            }
+        }
+
+        function openModal(id) { document.getElementById(id).style.display = "flex"; }
+        function closeModal(id) { document.getElementById(id).style.display = "none"; }
+    </script>
+</body>
+</html>
