@@ -1,13 +1,22 @@
 {
-  "background_color": "#0f172a",
-  "dir": "ltr",
-  "display": "standalone",
-  "name": "Next G Wifi App",
-  "orientation": "any",
-  "scope": "/",
-  "short_name": "nextg-wifi-app.vercel",
+  "name": "NextG Wi-Fi App",
+  "short_name": "NextG Wi-Fi",
   "start_url": "/",
-  "theme_color": "#f58220",
-  "id": "com.next-g-wifi-app",
-  "description": "Affordable High-Speed Fiber Internet &amp; WiFi Management App"
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#F58220",
+  "icons": [
+    {
+      "src": "https://www.pwabuilder.com/assets/icons/icon_192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://www.pwabuilder.com/assets/icons/icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }
