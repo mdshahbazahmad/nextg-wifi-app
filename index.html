@@ -5,11 +5,12 @@
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#F58220">
 
-    <!-- Service Worker Auto-Registration Script -->
+    <!-- Universal Service Worker Auto-Registration Script -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-          navigator.serviceWorker.register('./sw.js', { scope: './' })
+          // Registers pwabuilder-sw.js with relative path
+          navigator.serviceWorker.register('./pwabuilder-sw.js', { scope: './' })
             .then(function(reg) {
               console.log('Service Worker Registered Successfully! Scope:', reg.scope);
             })
