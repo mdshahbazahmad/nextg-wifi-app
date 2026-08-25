@@ -1,0 +1,13 @@
+{
+  "background_color": "#0f172a",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Next G Wifi App",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "nextg-wifi-app.vercel",
+  "start_url": "/",
+  "theme_color": "#f58220",
+  "id": "com.next-g-wifi-app",
+  "description": "Affordable High-Speed Fiber Internet &amp; WiFi Management App"
+}
