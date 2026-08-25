@@ -1,6 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- PWA Manifest Link -->
+<link rel="manifest" href="/manifest.json">
+
+<!-- Mobile Status Bar Color -->
+<meta name="theme-color" content="#F58220">
+
+<!-- Auto Register Service Worker Script -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('/sw.js')
+        .then(function(registration) {
+          console.log('Service Worker Registered Successfully:', registration.scope);
+        })
+        .catch(function(error) {
+          console.log('Service Worker Registration Failed:', error);
+        });
+    });
+  }
+</script>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
