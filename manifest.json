@@ -11,15 +11,15 @@
   "theme_color": "#F58220",
   "icons": [
     {
-      "src": "https://i.postimg.cc/90rC63Yp/gemini-svg-(1).jpg",
+      "src": "https://i.ibb.co/3sY3vNz/nextg-logo.png",
       "sizes": "192x192",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://i.postimg.cc/90rC63Yp/gemini-svg-(1).jpg",
+      "src": "https://i.ibb.co/3sY3vNz/nextg-logo.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any"
     }
   ]
