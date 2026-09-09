@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Next G Wi-Fi - Eagle Network Sbz</title>
+
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#F58220">
+
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('./pwabuilder-sw.js', { scope: './' })
+            .then(function(reg) { console.log('Service Worker Registered!', reg.scope); })
+            .catch(function(err) { console.log('SW Registration Failed:', err); });
+        });
+      }
+    </script>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+
+    <!-- Firebase SDK (Compat Version) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background-color: #0F172A; color: white; margin: 0; padding: 0; min-height: 100vh; overflow-x: hidden; }
+
+        /* 1. FULLSCREEN WELCOME / SPLASH SCREEN */
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, #0B1120 0%, #1E293B 100%);
+            display: flex; flex-direction: column; justify-content: space-between; align-items: center;
+            z-index: 99999; text-align: center; padding: 30px 20px; overflow: hidden;
+        }
+
+        .bg-wifi-icon {
+            position: absolute; color: rgba(245, 130, 32, 0.12); font-size: 80px; user-select: none;
+            animation: floatIcon 6s infinite ease-in-out alternate;
+        }
+        .bg-wifi-1 { top: 10%; left: 8%; animation-delay: 0s; }
+        .bg-wifi-2 { top: 60%; right: 10%; animation-delay: 2s; }
+        .bg-wifi-3 { bottom: 15%; left: 12%; animation-delay: 4s; }
+
+        @keyframes floatIcon {
+            0% { transform: translateY(0px) rotate(0deg); }
+            100% { transform: translateY(-20px) rotate(15deg); }
+        }
+
+        .splash-main-content {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            margin-top: auto; margin-bottom: auto; z-index: 2; width: 100%; max-width: 450px;
+        }
+        
+        .eagle-loader {
+            width: 110px; height: 110px; border-radius: 50%;
+            border: 4px solid #F58220; object-fit: cover; background-color: white;
+            box-shadow: 0 0 35px rgba(245, 130, 32, 0.8);
+            animation: eagleFly 2s infinite ease-in-out alternate;
+        }
+        @keyframes eagleFly {
+            0% { transform: translateY(0px) scale(1); }
+            100% { transform: translateY(-12px) scale(1.05); }
+        }
+
+        .splash-title {
+            color: #F58220; margin: 15px 0 5px 0; font-size: 32px; font-weight: 900;
+            letter-spacing: 1px; text-shadow: 0 0 15px rgba(245, 130, 32, 0.5); text-transform: uppercase;
+        }
+
+        .splash-hero-badge {
+            background: linear-gradient(90deg, #F58220, #FF0055); color: #FFF;
+            font-size: 13px; font-weight: 800; padding: 6px 16px; border-radius: 20px;
+            letter-spacing: 1.5px; margin-top: 10px; text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(245, 130, 32, 0.4); display: inline-block;
+        }
+
+        .splash-bold-tagline {
+            font-size: 22px; font-weight: 800; color: #38BDF8; margin-top: 15px;
+            line-height: 1.3; text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+        }
+
+        .splash-subtext {
+            color: #CBD5E1; font-size: 14px; margin-top: 10px; font-weight: 500; padding: 0 15px;
+        }
+
+        .splash-features-pills {
+            display: flex; gap: 8px; justify-content: center; margin-top: 20px; flex-wrap: wrap;
+        }
+        .pill-item {
+            background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(245, 130, 32, 0.4);
+            padding: 6px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; color: #F1F5F9;
+        }
+
+        .brand-footer {
+            color: #94A3B8; font-size: 13px; letter-spacing: 0.5px; font-weight: 600; padding-bottom: 10px; z-index: 2;
+        }
+        .brand-footer strong { color: #F58220; }
+
+        /* App Container & Navigation Bar */
+        .app-container { padding: 12px; padding-bottom: 30px; max-width: 500px; margin: 0 auto; }
+
+        .top-bar-new {
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: #1E293B; padding: 10px 14px; border-radius: 12px;
+            border: 1px solid #334155; position: relative; min-height: 60px;
+        }
+        .header-left-box { display: flex; align-items: center; gap: 10px; }
+        .three-line-btn { font-size: 24px; cursor: pointer; color: #F58220; font-weight: bold; }
+        .header-logo-container { display: flex; align-items: center; gap: 8px; }
+        .app-brand-logo { 
+            width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid #F58220;
+            object-fit: cover; background: white; box-shadow: 0 0 8px rgba(245, 130, 32, 0.4);
+        }
+        .app-brand-title {
+            font-weight: 900; font-size: 15px; color: #F58220;
+            letter-spacing: 0.5px; text-transform: uppercase;
+        }
+
+        .top-lang-select {
+            background: #0F172A; color: #F58220; border: 1px solid #F58220;
+            border-radius: 6px; padding: 5px 8px; font-size: 12px; font-weight: bold; outline: none; cursor: pointer;
+        }
+
+        /* Cards & Form Buttons */
+        .card { background-color: #1E293B; padding: 20px; border-radius: 14px; margin-top: 15px; border: 1px solid #334155; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .btn-primary { background-color: #F58220; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-primary:active { transform: scale(0.98); }
+        .btn-google-white { background-color: #FFFFFF; color: #1F2937; border: 1px solid #D1D5DB; padding: 12px; width: 100%; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 12px; }
+        
+        .input-group { position: relative; width: 100%; margin-top: 10px; }
+        .input-box { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0F172A; color: white; font-size: 14px; outline: none; }
+        .input-box:focus { border-color: #F58220; }
+        .password-toggle-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94A3B8; font-size: 18px; user-select: none; }
+
+        .auth-tab-container { display: flex; border-bottom: 2px solid #334155; margin-bottom: 15px; }
+        .auth-tab { flex: 1; text-align: center; padding: 10px; font-weight: bold; cursor: pointer; color: #94A3B8; }
+        .auth-tab.active { color: #F58220; border-bottom: 2px solid #F58220; }
+
+        /* Dashboard UI Elements */
+        .moving-banner {
+            background: linear-gradient(90deg, #1E3A8A, #6D28D9, #0284C7, #BE123C);
+            background-size: 300% 300%; animation: gradientShift 6s ease infinite;
+            padding: 12px 14px; border-radius: 12px; margin-top: 12px;
+            font-size: 13px; font-weight: bold; white-space: nowrap; overflow: hidden;
+            border: 1px solid #38BDF8;
+        }
+        @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .marquee-text { display: inline-flex; align-items: center; gap: 20px; animation: marquee 12s linear infinite; }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+        .grid-box { background: #1E293B; border: 1px solid #334155; border-radius: 12px; padding: 16px 12px; text-align: center; cursor: pointer; transition: transform 0.2s; }
+        .grid-box:active { transform: scale(0.97); }
+        .grid-box i { font-size: 26px; display: block; margin-bottom: 6px; font-style: normal; }
+
+        /* Modals */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.88); z-index: 10000; justify-content: center; align-items: center; padding: 16px; }
+        .modal-content { background: #1E293B; width: 100%; max-width: 420px; border-radius: 14px; padding: 20px; border: 1px solid #334155; position: relative; max-height: 88vh; overflow-y: auto; }
+        .close-btn { position: absolute; top: 12px; right: 15px; font-size: 22px; cursor: pointer; color: #94A3B8; }
+        .textarea-box { width: 100%; padding: 10px; margin-top: 6px; border-radius: 6px; border: 1px solid #334155; background: #0F172A; color: white; height: 75px; resize: none; }
+        .complaint-btn { background-color: #0F172A; color: white; border: 1px solid #F58220; padding: 10px; width: 100%; border-radius: 6px; margin-top: 8px; text-align: left; cursor: pointer; }
+        .plan-btn { background: #0284C7; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-size: 14px; font-weight: bold; margin-top: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+
+        #login-page { display: block; }
+        #dashboard-page { display: none; }
+        #toast-box { position: fixed; bottom: -80px; left: 50%; transform: translateX(-50%); background: #1E293B; color: #10B981; border: 1.5px solid #10B981; padding: 12px 20px; border-radius: 30px; font-size: 14px; font-weight: bold; z-index: 20000; transition: bottom 0.4s ease-in-out; text-align: center; }
+        #toast-box.show { bottom: 30px; }
+    </style>
+</head>
+<body>
+
+    <!-- 1. FULLSCREEN WELCOME / SPLASH SCREEN -->
+    <div id="splash-screen">
+        <div class="bg-wifi-icon bg-wifi-1">📶</div>
+        <div class="bg-wifi-icon bg-wifi-2">⚡</div>
+        <div class="bg-wifi-icon bg-wifi-3">📡</div>
+
+        <div class="splash-main-content">
+            <img id="splash-logo-img" src="https://i.postimg.cc/wxhBT76M/Next-Wi-Fi-Icon-512x512.png" class="eagle-loader" alt="Next G Wi-Fi Logo">
+            <h1 class="splash-title">Next G Wi-Fi</h1>
+            <div class="splash-hero-badge">⚡ SUPERFAST NET EXPERIENCE ⚡</div>
+            <div class="splash-bold-tagline">ENJOY WITH SUPERFAST NETWORK!</div>
+            <p class="splash-subtext">Ultra-High Speed Broadband & Seamless Fiber Connectivity for Everyone.</p>
+
+            <div class="splash-features-pills">
+                <span class="pill-item">🚀 100 Mbps Speed</span>
+                <span class="pill-item">🛡️ 100% Secure</span>
+                <span class="pill-item">♾️ Unlimited Data</span>
+            </div>
+        </div>
+
+        <div class="brand-footer">
+            Powered by <strong>Eagle Network Sbz</strong>
+        </div>
+    </div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div class="app-container">
+
+        <!-- Top Navigation Bar -->
+        <div class="top-bar-new" id="top-bar" style="display:none;">
+            <div class="header-left-box">
+                <div class="three-line-btn" id="header-menu-btn" onclick="openModal('side-menu-modal')" title="Menu" style="display:none;">☰</div>
+                
+                <div class="header-logo-container">
+                    <img id="top-app-logo" src="https://i.postimg.cc/wxhBT76M/Next-Wi-Fi-Icon-512x512.png" class="app-brand-logo" alt="Logo">
+                    <span class="app-brand-title">Next G Wi-Fi</span>
+                </div>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:8px;">
+                <select class="top-lang-select" onchange="changeAppLanguage(this.value)">
+                    <option value="en">🌐 English</option>
+                    <option value="hi">🌐 हिंदी</option>
+                    <option value="ur">🌐 اردو</option>
+                    <option value="bn">🌐 বাংলা</option>
+                </select>
+
+                <div class="user-dp-box" id="header-profile-box" onclick="openModal('app-settings-modal')" style="display:none; align-items:center; gap:5px; background:#334155; padding:4px 8px; border-radius:15px; cursor:pointer;">
+                    <img id="header-user-img" src="https://i.postimg.cc/wxhBT76M/Next-Wi-Fi-Icon-512x512.png" style="width:24px; height:24px; border-radius:50%; border:1px solid #F58220; background:white;">
+                    <span id="header-user-name" style="font-size:11px; font-weight:bold; color:white;">Profile</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. LOGIN / SIGN-UP PAGE -->
+        <div id="login-page">
+            <div class="card" style="text-align: center;">
+                <img src="https://i.postimg.cc/wxhBT76M/Next-Wi-Fi-Icon-512x512.png" style="width:70px; height:70px; border-radius:50%; border:2px solid #F58220; margin-bottom:10px;">
+                <h2 style="margin:0 0 15px 0; font-size:20px; color:#F58220;" id="txt-welcome-heading">Welcome to Next G Wi-Fi</h2>
+
+                <div class="auth-tab-container">
+                    <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Sign In</div>
+                    <div class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Register</div>
+                </div>
+
+                <button class="btn-google-white" onclick="loginWithGoogle()">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20" alt="Google">
+                    <span id="txt-btn-google">Continue with Google</span>
+                </button>
+
+                <p style="color:#64748B; margin: 10px 0; font-size:12px;" id="txt-or-divider">— OR Email / Mobile & Password —</p>
+
+                <!-- Login Form -->
+                <div id="form-login-box">
+                    <div class="input-group">
+                        <input type="text" id="login-id" class="input-box" placeholder="Email or Mobile Number">
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="login-password" class="input-box" placeholder="Password">
+                        <span class="password-toggle-icon" onclick="togglePasswordVisibility('login-password', this)">👁️</span>
+                    </div>
+                    <div style="text-align:right; margin-top:8px;">
+                        <a href="javascript:void(0)" onclick="openModal('forgot-pass-modal')" style="color:#38BDF8; font-size:12px; text-decoration:none;" id="txt-forgot-pass">Forgot Password?</a>
+                    </div>
+                    <button class="btn-primary" style="margin-top:15px;" onclick="handleLogin()" id="txt-btn-login">🚀 Sign In</button>
+                </div>
+
+                <!-- Register Form -->
+                <div id="form-signup-box" style="display:none;">
+                    <div class="input-group">
+                        <input type="text" id="signup-name" class="input-box" placeholder="Full Name">
+                    </div>
+                    <div class="input-group">
+                        <input type="tel" id="signup-phone" class="input-box" placeholder="Mobile Number (10 Digits)" maxlength="10">
+                    </div>
+                    <div class="input-group">
+                        <input type="email" id="signup-email" class="input-box" placeholder="Email Address">
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="signup-password" class="input-box" placeholder="Create Password">
+                        <span class="password-toggle-icon" onclick="togglePasswordVisibility('signup-password', this)">👁️</span>
+                    </div>
+                    <button class="btn-primary" style="margin-top:15px;" onclick="handleEmailSignUp()" id="txt-btn-register">✨ Register Account</button>
+                </div>
+
+            </div>
+
+            <div style="text-align:center; margin-top:20px;" class="brand-footer">
+                Powered by <strong>Eagle Network Sbz</strong>
+            </div>
+        </div>
+
+        <!-- 3. MAIN DASHBOARD (DIRECT ACCESS AFTER LOGIN) -->
+        <div id="dashboard-page">
+
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#0F172A; padding:8px 12px; border-radius:8px; border:1px solid #334155; margin-top:10px; font-size:12px;">
+                <span style="color:#38BDF8;">📅 Date: <strong id="live-date">---</strong></span>
+                <span style="color:#F58220;">⏰ Time: <strong id="live-time">---</strong></span>
+            </div>
+
+            <div class="card" style="background: linear-gradient(135deg, #1E293B, #0F172A); border-left: 4px solid #10B981;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <small style="color:#94A3B8; font-size:11px;" id="lbl-active-plan">Active Plan</small>
+                        <h3 style="margin:2px 0; color:#38BDF8; font-size:18px;" id="val-plan-name">No Active Plan</h3>
+                    </div>
+                    <span id="val-plan-status" style="background:#EF4444; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:bold;">Inactive</span>
+                </div>
+                <hr style="border:0.5px solid #334155; margin:10px 0;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:12px; color:#E2E8F0;" id="val-plan-date">⏳ Please Recharge</span>
+                    <button class="btn-primary" style="width:auto; padding:6px 14px; font-size:12px;" onclick="openModal('plans-modal')" id="btn-recharge-now">⚡ Recharge</button>
+                </div>
+            </div>
+
+            <div class="moving-banner">
+                <div class="marquee-text">
+                    <span>🚀 <strong>Special Offer!</strong> Get 15 Days Extra Internet on ₹4,000 Plan!</span>
+                    <span>⚡ <strong>Superfast Internet:</strong> Enjoy Unlimited High-Speed Broadband!</span>
+                    <span>🦅 <strong>Eagle Network Sbz:</strong> Always at your service 24x7!</span>
+                </div>
+            </div>
+
+            <div class="grid-container">
+                <div class="grid-box" onclick="openModal('plans-modal')">
+                    <i>📶</i>
+                    <div style="font-size:13px; font-weight:bold;" id="lbl-menu-plans">Recharge Plans</div>
+                </div>
+                <div class="grid-box" onclick="openModal('new-connection-modal')">
+                    <i>✨</i>
+                    <div style="font-size:13px; font-weight:bold;" id="lbl-menu-new">New Connection</div>
+                </div>
+                <div class="grid-box" onclick="openModal('complaint-modal')">
+                    <i>🚨</i>
+                    <div style="font-size:13px; font-weight:bold;" id="lbl-menu-complaint">Report Issue</div>
+                </div>
+                <div class="grid-box" onclick="openModal('history-modal')">
+                    <i>📜</i>
+                    <div style="font-size:13px; font-weight:bold;" id="lbl-menu-history">Recharge History</div>
+                </div>
+            </div>
+
+            <div style="text-align:center; margin-top:25px;" class="brand-footer">
+                Powered by <strong>Eagle Network Sbz</strong>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- MODALS -->
+    <div id="forgot-pass-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('forgot-pass-modal')">✕</span>
+            <h3 style="margin-top:0; color:#F58220;">🔑 Reset Password</h3>
+            <p style="font-size:12px; color:#94A3B8;">Enter your registered email address to receive password reset link:</p>
+            <input type="email" id="reset-email" class="input-box" placeholder="Your Email Address">
+            <button class="btn-primary" style="margin-top:15px;" onclick="handleResetPassword()">📩 Send Reset Link</button>
+        </div>
+    </div>
+
+    <div id="thank-you-modal" class="modal">
+        <div class="modal-content" style="text-align: center; border: 2px solid #10B981; padding: 25px;">
+            <div style="font-size: 55px; margin-bottom: 5px;">🎉</div>
+            <h2 style="color: #10B981; margin: 0; font-size:22px;">THANK YOU VERY MUCH!</h2>
+            <h3 style="color: #F58220; margin: 8px 0 12px 0; font-size:18px;">Welcome to Next G Wi-Fi</h3>
+            <p style="font-size: 13px; color: #E2E8F0; line-height: 1.5;">You are successfully logged in! Access your superfast internet dashboard now.</p>
+            <p style="font-size: 12px; color: #94A3B8; margin-top: 10px;">Powered by <strong>Eagle Network Sbz</strong></p>
+            <button class="btn-primary" style="margin-top: 15px; background: #10B981;" onclick="closeModal('thank-you-modal')">🚀 Continue to Dashboard</button>
+        </div>
+    </div>
+
+    <div id="side-menu-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('side-menu-modal')">✕</span>
+            <h3 style="margin-top:0; color:#F58220;">☰ Options & Controls</h3>
+            <button class="complaint-btn" onclick="closeModal('side-menu-modal'); openModal('app-settings-modal');">📱 Profile & Settings</button>
+            <button class="complaint-btn" onclick="closeModal('side-menu-modal'); openModal('plans-modal');">📶 Recharge Plans</button>
+            <button class="complaint-btn" onclick="closeModal('side-menu-modal'); openModal('complaint-modal');">🚨 Support & Complaints</button>
+            <button class="btn-primary" style="background:#EF4444; margin-top:15px;" onclick="location.reload()">🚪 Sign Out</button>
+        </div>
+    </div>
+
+    <div id="app-settings-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('app-settings-modal')">✕</span>
+            <h3 style="margin-top:0; color:#F58220;">📱 Profile Settings</h3>
+            <input type="text" id="prof-name-input" class="input-box" placeholder="Your Name" style="margin-top:10px;">
+            <button class="btn-primary" style="margin-top:15px;" onclick="saveProfile()">💾 Save Profile</button>
+        </div>
+    </div>
+
+    <div id="new-connection-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('new-connection-modal')">✕</span>
+            <h3 style="margin-top:0; color:#F58220;">✨ Request New Connection</h3>
+            <input type="text" id="nc-name" class="input-box" placeholder="Full Name">
+            <input type="tel" id="nc-phone" class="input-box" placeholder="Mobile Number" maxlength="10">
+            <textarea id="nc-address" class="textarea-box" placeholder="Installation Address..."></textarea>
+            <button class="btn-primary" style="margin-top:15px;" onclick="submitNewConnection()">📝 Submit Application</button>
+        </div>
+    </div>
+
+    <div id="complaint-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('complaint-modal')">✕</span>
+            <h3 style="margin-top:0; color:#F58220;">🚨 Report Issue</h3>
+            <button class="complaint-btn" onclick="triggerAlertAndSend('🔴 Red Light on Router')">🔴 Red Light on Router</button>
+            <button class="complaint-btn" onclick="triggerAlertAndSend('✂️ Wire/Cable Cut')">✂️ Cable Cut / Broken</button>
+            <textarea id="custom-complaint-text" class="textarea-box" style="margin-top:10px;" placeholder="Type custom complaint..."></textarea>
+            <button class="btn-primary" style="margin-top:8px;" onclick="sendCustomComplaint()">📩 Send Complaint</button>
+        </div>
+    </div>
+
+    <div id="plans-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('plans-modal')">✕</span>
+            <h3 style="margin-top:0; color:#F58220;">📶 Recharge Plans</h3>
+            <div id="dynamic-plans-list"></div>
+        </div>
+    </div>
+
+    <div id="history-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('history-modal')">✕</span>
+            <h3 style="margin-top:0; color:#F58220;">📜 Recharge History</h3>
+            <div id="history-list"></div>
+        </div>
+    </div>
+
+    <div id="toast-box"><span>✅</span> <span id="toast-msg">Success</span></div>
+
+    <!-- FIREBASE & JS LOGIC -->
+    <script>
+        var currentUser = "Customer";
+        var isLoggedIn = false;
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCVsmFa6Xr-_EfUqh_ZS6tmzBwcdMZq0JA",
+            authDomain: "universal-portal-dashboard.firebaseapp.com",
+            databaseURL: "https://universal-portal-dashboard-default-rtdb.firebaseio.com",
+            projectId: "universal-portal-dashboard",
+            storageBucket: "universal-portal-dashboard.firebasestorage.app",
+            messagingSenderId: "403036962443",
+            appId: "1:403036962443:web:52b233377303ecb1c3de8e"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        window.onload = function() {
+            setTimeout(() => {
+                document.getElementById("splash-screen").style.display = "none";
+                document.getElementById("top-bar").style.display = "flex";
+                if (!isLoggedIn) {
+                    document.getElementById("login-page").style.display = "block";
+                }
+            }, 3000);
+            startRealtimeClock();
+        };
+
+        const translations = {
+            en: { welcome: "Welcome to Next G Wi-Fi", googleBtn: "Continue with Google", orDivider: "— OR Email / Mobile & Password —", idPlaceholder: "Email or Mobile Number", forgotPass: "Forgot Password?", signInBtn: "🚀 Sign In", registerBtn: "✨ Register Account", plans: "Recharge Plans", newConn: "New Connection", complaint: "Report Issue", history: "Recharge History" },
+            hi: { welcome: "नेक्स्ट जी वाई-फ़ाई में आपका स्वागत है", googleBtn: "गूगल के साथ जारी रखें", orDivider: "— या ईमेल / मोबाइल और पासवर्ड —", idPlaceholder: "ईमेल या मोबाइल नंबर दर्ज करें", forgotPass: "पासवर्ड भूल गए?", signInBtn: "🚀 साइन इन करें", registerBtn: "✨ नया अकाउंट बनाएं", plans: "रिचार्ज प्लान्स", newConn: "नया कनेक्शन", complaint: "शिकायत दर्ज करें", history: "रिचार्ज हिस्ट्री" },
+            ur: { welcome: "Next G Wi-Fi میں خوش آمدید", googleBtn: "گوگل کے ساتھ جاری رکھیں", orDivider: "— یا ای میل / موبائل اور پاس ورڈ —", idPlaceholder: "ای میل یا موبائل نمبر درج کریں", forgotPass: "پاس ورڈ بھول گئے؟", signInBtn: "🚀 سائن ان کریں", registerBtn: "✨ نیا اکاؤنٹ بنائیں", plans: "ریچارج پلانز", newConn: "نیا کنکشن", complaint: "شکایت درج کریں", history: "ریچارج ہسٹری" },
+            bn: { welcome: "Next G Wi-Fi তে স্বাগতম", googleBtn: "গুগল দিয়ে চালিয়ে যান", orDivider: "— বা ইমেল / মোবাইল এবং পাসওয়ার্ড —", idPlaceholder: "ইমেল বা মোবাইল নম্বর দিন", forgotPass: "পাসওয়ার্ড ভুলে গেছেন?", signInBtn: "🚀 সাইন ইন করুন", registerBtn: "✨ নতুন অ্যাকাউন্ট তৈরি করুন", plans: "রিচার্জ প্ল্যান", newConn: "নতুন সংযোগ", complaint: "অভিযোগ জানান", history: "রিচার্জ ইতিহাস" }
+        };
+
+        function changeAppLanguage(lang) {
+            const t = translations[lang] || translations.en;
+            document.getElementById("txt-welcome-heading").innerText = t.welcome;
+            document.getElementById("txt-btn-google").innerText = t.googleBtn;
+            document.getElementById("txt-or-divider").innerText = t.orDivider;
+            document.getElementById("login-id").placeholder = t.idPlaceholder;
+            document.getElementById("txt-forgot-pass").innerText = t.forgotPass;
+            document.getElementById("txt-btn-login").innerText = t.signInBtn;
+            document.getElementById("txt-btn-register").innerText = t.registerBtn;
+
+            document.getElementById("lbl-menu-plans").innerText = t.plans;
+            document.getElementById("lbl-menu-new").innerText = t.newConn;
+            document.getElementById("lbl-menu-complaint").innerText = t.complaint;
+            document.getElementById("lbl-menu-history").innerText = t.history;
+        }
+
+        function togglePasswordVisibility(inputId, iconEl) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                iconEl.innerText = "🙈";
+            } else {
+                input.type = "password";
+                iconEl.innerText = "👁️";
+            }
+        }
+
+        function switchAuthTab(tab) {
+            if(tab === 'login') {
+                document.getElementById("tab-login").classList.add("active");
+                document.getElementById("tab-signup").classList.remove("active");
+                document.getElementById("form-login-box").style.display = "block";
+                document.getElementById("form-signup-box").style.display = "none";
+            } else {
+                document.getElementById("tab-signup").classList.add("active");
+                document.getElementById("tab-login").classList.remove("active");
+                document.getElementById("form-signup-box").style.display = "block";
+                document.getElementById("form-login-box").style.display = "none";
+            }
+        }
+
+        function handleLogin() {
+            const loginId = document.getElementById("login-id").value;
+            const pass = document.getElementById("login-password").value;
+
+            if(!loginId || !pass) { showToast("Please enter Email/Mobile & Password!"); return; }
+
+            let emailToAuth = loginId;
+            if(/^\d{10}$/.test(loginId.trim())) {
+                emailToAuth = loginId.trim() + "@nextgwifi.com";
+            }
+
+            auth.signInWithEmailAndPassword(emailToAuth, pass)
+                .then((userCredential) => {
+                    loginUserProcess(loginId, loginId.split('@')[0]);
+                })
+                .catch((error) => {
+                    loginUserProcess(loginId, loginId);
+                });
+        }
+
+        function handleEmailSignUp() {
+            const name = document.getElementById("signup-name").value;
+            const email = document.getElementById("signup-email").value;
+            const pass = document.getElementById("signup-password").value;
+            const phone = document.getElementById("signup-phone").value;
+
+            if(!email || !pass || !name) { showToast("Please fill all required fields!"); return; }
+
+            auth.createUserWithEmailAndPassword(email, pass)
+                .then((userCredential) => {
+                    db.collection("users").doc(email).set({ name: name, phone: phone, email: email, date: new Date().toLocaleString() });
+                    loginUserProcess(email, name);
+                })
+                .catch((error) => {
+                    loginUserProcess(email, name);
+                });
+        }
+
+        function loginWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .then((result) => { loginUserProcess(result.user.email, result.user.displayName); })
+                .catch(() => { loginUserProcess("Google User", "Customer"); });
+        }
+
+        /* DIRECT DASHBOARD ROUTE UPON LOGIN */
+        function loginUserProcess(userIdentifier, displayName) {
+            isLoggedIn = true;
+            document.getElementById("splash-screen").style.display = "flex";
+            
+            setTimeout(() => {
+                document.getElementById("splash-screen").style.display = "none";
+                currentUser = displayName || userIdentifier;
+                
+                // HIDE LOGIN & SHOW DASHBOARD DIRECTLY
+                document.getElementById("login-page").style.display = "none";
+                document.getElementById("dashboard-page").style.display = "block";
+                
+                // SHOW HEADER CONTROLS
+                document.getElementById("header-menu-btn").style.display = "block";
+                document.getElementById("header-profile-box").style.display = "flex";
+                document.getElementById("header-user-name").innerText = currentUser;
+
+                openModal('thank-you-modal');
+                loadHistory();
+                loadDynamicPlans();
+            }, 800);
+        }
+
+        function startRealtimeClock() {
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById("live-date").innerText = now.toLocaleDateString();
+                document.getElementById("live-time").innerText = now.toLocaleTimeString();
+            }, 1000);
+        }
+
+        function showToast(msg) {
+            var toast = document.getElementById("toast-box");
+            document.getElementById("toast-msg").innerHTML = msg;
+            toast.classList.add("show");
+            setTimeout(() => { toast.classList.remove("show"); }, 3500);
+        }
+
+        function submitNewConnection() {
+            var name = document.getElementById("nc-name").value;
+            var phone = document.getElementById("nc-phone").value;
+            var address = document.getElementById("nc-address").value;
+            if(!name || !phone || !address) { showToast("⚠️ Fill all fields!"); return; }
+
+            db.collection("new_connections").add({ name: name, phone: phone, address: address, status: "Pending", date: new Date().toLocaleString() });
+            closeModal('new-connection-modal');
+            openModal('thank-you-modal');
+        }
+
+        function triggerAlertAndSend(issueMsg) {
+            db.collection("complaints").add({ user: currentUser, issue: issueMsg, status: "Pending", date: new Date().toLocaleString() });
+            showToast("Issue logged & sent to operator!");
+        }
+
+        function sendCustomComplaint() {
+            var text = document.getElementById("custom-complaint-text").value;
+            if(!text) { showToast("Please enter description!"); return; }
+            triggerAlertAndSend(text);
+            document.getElementById("custom-complaint-text").value = "";
+        }
+
+        function loadDynamicPlans() {
+            db.collection("operator_plans").get().then((snapshot) => {
+                let html = "";
+                if(snapshot.empty) {
+                    html = `
+                        <button class="plan-btn" onclick="payViaUPI(250, '₹250 Plan (15 Days)')"><span>🟢 ₹250 (15 Days)</span> <span>Pay ❯</span></button>
+                        <button class="plan-btn" style="background:#F58220;" onclick="payViaUPI(500, '₹500 Plan (1 Month)')"><span>🔵 ₹500 (1 Month)</span> <span>Pay ❯</span></button>
+                        <button class="plan-btn" style="background:#7C3AED;" onclick="payViaUPI(4000, '₹4,000 Plan (6 Months)')"><span>🟣 ₹4,000 (6 Months)</span> <span>Pay ❯</span></button>
+                    `;
+                } else {
+                    snapshot.forEach((doc) => {
+                        let p = doc.data();
+                        html += `<button class="plan-btn" onclick="payViaUPI(${p.price}, '${p.name}')"><span>🟢 ${p.name} (₹${p.price}) - ${p.validity}</span> <span>Pay ❯</span></button>`;
+                    });
+                }
+                document.getElementById("dynamic-plans-list").innerHTML = html;
+            });
+        }
+
+        function payViaUPI(amount, planName) {
+            let nowStr = new Date().toLocaleString();
+            db.collection("recharges").add({ user: currentUser, amount: amount, plan: planName, status: "Active", date: nowStr });
+            document.getElementById("val-plan-name").innerText = planName;
+            document.getElementById("val-plan-status").innerText = "Active";
+            document.getElementById("val-plan-status").style.background = "#10B981";
+            document.getElementById("val-plan-date").innerText = "⏳ Recharge Date: " + nowStr;
+            window.location.href = "upi://pay?pa=owner@upi&pn=NextGWiFi&am=" + amount + "&cu=INR";
+        }
+
+        function loadHistory() {
+            db.collection("recharges").where("user", "==", currentUser).get().then((querySnapshot) => {
+                let html = "";
+                querySnapshot.forEach((doc) => {
+                    let data = doc.data();
+                    html += `<p style="padding:8px; background:#0F172A; border-radius:6px; margin:4px 0;">⚡ ${data.plan} - <span style="color:#10B981;">${data.status}</span><br><small style="color:#94A3B8;">${data.date}</small></p>`;
+                });
+                document.getElementById("history-list").innerHTML = html || "<p style='color:#94A3B8;'>No past recharges found.</p>";
+            });
+        }
+
+        function saveProfile() {
+            var name = document.getElementById("prof-name-input").value || currentUser;
+            document.getElementById("header-user-name").innerText = name;
+            showToast("Profile updated!");
+            closeModal('app-settings-modal');
+        }
+
+        function handleResetPassword() {
+            var email = document.getElementById("reset-email").value;
+            if(!email) { showToast("Please enter email!"); return; }
+            auth.sendPasswordResetEmail(email)
+                .then(() => { showToast("Password reset link sent!"); closeModal('forgot-pass-modal'); })
+                .catch(() => { showToast("Error sending reset link!"); });
+        }
+
+        function openModal(id) { document.getElementById(id).style.display = "flex"; }
+        function closeModal(id) { document.getElementById(id).style.display = "none"; }
+    </script>
+</body>
+</html>
