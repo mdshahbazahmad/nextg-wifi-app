@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NextG WiFi</title>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #0b1329; color: #ffffff; min-height: 100vh; overflow-x: hidden; }
+
+        /* TOP BAR WITH LANGUAGE SELECTOR */
+        .top-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 20px; background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 100;
+        }
+        .brand-logo-top { font-weight: 900; font-size: 18px; color: #F58220; letter-spacing: 1px; }
+        .lang-btn {
+            background: #1E293B; color: #F58220; border: 1px solid #F58220;
+            padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer;
+        }
+
+        /* 🎬 MOVIE / ANIMATED WELCOME BANNER WITH LOGO */
+        .welcome-hero {
+            position: relative; width: 100%; min-height: 320px; padding: 30px 15px;
+            background: linear-gradient(-45deg, #0b1329, #1e293b, #0284c7, #f58220);
+            background-size: 400% 400%;
+            animation: moveGradient 10s ease infinite;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; overflow: hidden; border-bottom: 2px solid #334155;
+        }
+
+        @keyframes moveGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Moving Background Floating Icons */
+        .moving-particle {
+            position: absolute; opacity: 0.15; font-size: 80px; user-select: none;
+            animation: floatMove 8s infinite ease-in-out alternate;
+        }
+        .p1 { top: 10%; left: 8%; animation-delay: 0s; }
+        .p2 { top: 50%; right: 8%; animation-delay: 3s; }
+
+        @keyframes floatMove {
+            0% { transform: translateY(0px) rotate(0deg); }
+            100% { transform: translateY(-25px) rotate(15deg); }
+        }
+
+        /* 🖼️ BIG BRAND LOGO WITH GLOW EFFECT */
+        .main-brand-logo {
+            width: 110px; height: 110px; border-radius: 50%;
+            border: 3.5px solid #F58220; object-fit: cover; background-color: #ffffff;
+            box-shadow: 0 0 30px rgba(245, 130, 32, 0.8);
+            margin-bottom: 12px; z-index: 2;
+            animation: logoPulse 2.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes logoPulse {
+            0% { transform: scale(1); box-shadow: 0 0 20px rgba(245, 130, 32, 0.6); }
+            100% { transform: scale(1.06); box-shadow: 0 0 45px rgba(245, 130, 32, 1); }
+        }
+
+        .welcome-title {
+            font-size: 30px; font-weight: 900; color: #ffffff;
+            text-shadow: 0 0 15px rgba(245, 130, 32, 0.8); z-index: 2;
+        }
+
+        .welcome-sub { color: #38BDF8; font-size: 13px; font-weight: 700; margin-top: 6px; letter-spacing: 1px; z-index: 2; }
+
+        /* AUTH CONTAINER */
+        .auth-container { max-width: 420px; margin: 25px auto; padding: 0 15px; }
+        .auth-card { background: #1E293B; border-radius: 16px; padding: 20px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+
+        .tab-box { display: flex; border-bottom: 2px solid #334155; margin-bottom: 20px; }
+        .tab-btn { flex: 1; text-align: center; padding: 10px; font-weight: bold; color: #94A3B8; cursor: pointer; }
+        .tab-btn.active { color: #F58220; border-bottom: 2px solid #F58220; }
+
+        .btn-google {
+            background: #ffffff; color: #1e293b; border: none; width: 100%;
+            padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;
+        }
+
+        .input-group { position: relative; margin-top: 12px; }
+        .input-field {
+            width: 100%; padding: 12px; background: #0b1329; border: 1px solid #334155;
+            border-radius: 8px; color: white; outline: none; font-size: 14px;
+        }
+        .input-field:focus { border-color: #F58220; }
+        .eye-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94A3B8; }
+
+        .btn-submit {
+            background: #F58220; color: white; border: none; width: 100%;
+            padding: 12px; border-radius: 8px; font-weight: bold; font-size: 15px;
+            cursor: pointer; margin-top: 18px;
+        }
+
+        .footer-text { text-align: center; color: #64748B; font-size: 12px; margin-top: 25px; margin-bottom: 15px; }
+        .footer-text strong { color: #F58220; }
+    </style>
+</head>
+<body>
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <div class="brand-logo-top">NextG WiFi</div>
+        <select class="lang-btn">
+            <option>🌐 English</option>
+            <option>🌐 हिंदी</option>
+            <option>🌐 اردو</option>
+            <option>🌐 বাংলা</option>
+        </select>
+    </div>
+
+    <!-- 🎬 MOVING WELCOME HERO WITH BIG LOGO -->
+    <div class="welcome-hero">
+        <div class="moving-particle p1">📶</div>
+        <div class="moving-particle p2">⚡</div>
+        
+        <!-- NextG WiFi Main Big Logo -->
+        <img src="https://i.postimg.cc/wxhBT76M/Next-Wi-Fi-Icon-512x512.png" class="main-brand-logo" alt="NextG WiFi Logo">
+        
+        <h1 class="welcome-title">Welcome to NextG WiFi</h1>
+        <p class="welcome-sub">ENJOY WITH SUPERFAST NETWORK</p>
+    </div>
+
+    <!-- AUTHENTICATION CARD -->
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="tab-box">
+                <div class="tab-btn active" id="tab-login" onclick="switchAuth('login')">Sign In</div>
+                <div class="tab-btn" id="tab-signup" onclick="switchAuth('signup')">Sign Up</div>
+            </div>
+
+            <button class="btn-google">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="Google">
+                Continue with Google
+            </button>
+
+            <!-- SIGN IN FORM -->
+            <div id="login-form">
+                <div class="input-group">
+                    <input type="text" class="input-field" placeholder="Email or Mobile Number">
+                </div>
+                <div class="input-group">
+                    <input type="password" id="pass-login" class="input-field" placeholder="Password">
+                    <span class="eye-toggle" onclick="togglePassword('pass-login', this)">👁️</span>
+                </div>
+                <div style="text-align:right; margin-top:8px;">
+                    <a href="#" style="color:#38BDF8; font-size:12px; text-decoration:none;">Forgot Password?</a>
+                </div>
+                <button class="btn-submit">Sign In</button>
+            </div>
+
+            <!-- SIGN UP FORM -->
+            <div id="signup-form" style="display:none;">
+                <div class="input-group">
+                    <input type="text" class="input-field" placeholder="Full Name">
+                </div>
+                <div class="input-group">
+                    <input type="tel" class="input-field" placeholder="Phone Number">
+                </div>
+                <div class="input-group">
+                    <input type="email" class="input-field" placeholder="Email Address">
+                </div>
+                <div class="input-group">
+                    <input type="password" id="pass-signup" class="input-field" placeholder="Create Password">
+                    <span class="eye-toggle" onclick="togglePassword('pass-signup', this)">👁️</span>
+                </div>
+                <button class="btn-submit">Create Account</button>
+            </div>
+        </div>
+
+        <div class="footer-text">
+            Powered by <strong>Eagle Network SBZ</strong>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword(inputId, icon) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                icon.innerText = "🙈";
+            } else {
+                input.type = "password";
+                icon.innerText = "👁️";
+            }
+        }
+
+        function switchAuth(type) {
+            if (type === 'login') {
+                document.getElementById('login-form').style.display = 'block';
+                document.getElementById('signup-form').style.display = 'none';
+                document.getElementById('tab-login').classList.add('active');
+                document.getElementById('tab-signup').classList.remove('active');
+            } else {
+                document.getElementById('login-form').style.display = 'none';
+                document.getElementById('signup-form').style.display = 'block';
+                document.getElementById('tab-signup').classList.add('active');
+                document.getElementById('tab-login').classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
