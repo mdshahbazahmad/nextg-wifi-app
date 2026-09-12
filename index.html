@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NextG WiFi</title>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #0b1329; color: #ffffff; min-height: 100vh; overflow-x: hidden; }
+
+        /* TOP BAR WITH LANGUAGE SELECTOR */
+        .top-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 20px; background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 100;
+            border-bottom: 1px solid #1e293b;
+        }
+        .brand-logo-top { font-weight: 900; font-size: 18px; color: #F58220; letter-spacing: 1px; }
+        .lang-btn {
+            background: #1E293B; color: #F58220; border: 1px solid #F58220;
+            padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; outline: none;
+        }
+
+        /* WELCOME HERO WITH CLEAN DARK BACKGROUND */
+        .welcome-hero {
+            position: relative; width: 100%; min-height: 220px; padding: 25px 15px 15px 15px;
+            background: #0f172a; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; border-bottom: 2px solid #334155;
+        }
+
+        .main-brand-logo {
+            width: 100px; height: 100px; border-radius: 50%;
+            border: 3.5px solid #F58220; object-fit: cover; background-color: #ffffff;
+            box-shadow: 0 0 25px rgba(245, 130, 32, 0.6); margin-bottom: 12px;
+        }
+
+        .welcome-title { font-size: 24px; font-weight: 900; color: #ffffff; }
+        .welcome-sub { color: #38BDF8; font-size: 12px; font-weight: 700; margin-top: 4px; letter-spacing: 1px; }
+
+        /* AUTH CONTAINER */
+        .auth-container { max-width: 420px; margin: 20px auto; padding: 0 15px; }
+        .auth-card { background: #1E293B; border-radius: 16px; padding: 20px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+
+        .tab-box { display: flex; border-bottom: 2px solid #334155; margin-bottom: 20px; }
+        .tab-btn { flex: 1; text-align: center; padding: 10px; font-weight: bold; color: #94A3B8; cursor: pointer; }
+        .tab-btn.active { color: #F58220; border-bottom: 2px solid #F58220; }
+
+        .btn-google {
+            background: #ffffff; color: #1e293b; border: none; width: 100%;
+            padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;
+        }
+
+        .input-group { position: relative; margin-top: 12px; }
+        .input-field {
+            width: 100%; padding: 12px 40px 12px 12px; background: #0b1329; border: 1px solid #334155;
+            border-radius: 8px; color: white; outline: none; font-size: 14px;
+        }
+        .input-field:focus { border-color: #F58220; }
+        .eye-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94A3B8; user-select: none; }
+
+        .btn-submit {
+            background: #F58220; color: white; border: none; width: 100%;
+            padding: 12px; border-radius: 8px; font-weight: bold; font-size: 15px;
+            cursor: pointer; margin-top: 18px; transition: 0.3s;
+        }
+        .btn-submit:hover { background: #e06f13; }
+
+        /* FORGOT PASSWORD MODAL */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            display: none; justify-content: center; align-items: center; z-index: 200; padding: 15px;
+        }
+        .modal-card {
+            background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 20px;
+            width: 100%; max-width: 380px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+        .modal-title { font-size: 18px; font-weight: 800; color: #ffffff; margin-bottom: 6px; }
+        .modal-sub { font-size: 12px; color: #94a3b8; margin-bottom: 15px; }
+
+        .footer-text { text-align: center; color: #64748B; font-size: 12px; margin-top: 25px; margin-bottom: 15px; }
+        .footer-text strong { color: #F58220; }
+    </style>
+</head>
+<body>
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <div class="brand-logo-top">NextG WiFi</div>
+        <select class="lang-btn">
+            <option>🌐 English</option>
+            <option>🌐 हिंदी</option>
+            <option>🌐 اردو</option>
+            <option>🌐 বাংলা</option>
+        </select>
+    </div>
+
+    <!-- WELCOME HERO -->
+    <div class="welcome-hero">
+        <img src="https://i.postimg.cc/wxhBT76M/Next-Wi-Fi-Icon-512x512.png" class="main-brand-logo" alt="NextG WiFi Logo">
+        <h1 class="welcome-title">Welcome to NextG WiFi</h1>
+        <p class="welcome-sub">ENJOY WITH SUPERFAST NETWORK</p>
+    </div>
+
+    <!-- AUTHENTICATION CARD -->
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="tab-box">
+                <div class="tab-btn active" id="tab-login" onclick="switchAuth('login')">Sign In</div>
+                <div class="tab-btn" id="tab-signup" onclick="switchAuth('signup')">Sign Up</div>
+            </div>
+
+            <button type="button" class="btn-google" onclick="handleGoogleLogin()">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="Google">
+                Continue with Google
+            </button>
+
+            <!-- SIGN IN FORM -->
+            <form id="login-form" onsubmit="handleSignIn(event)">
+                <div class="input-group">
+                    <input type="email" id="login-user" class="input-field" placeholder="Email Address" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="pass-login" class="input-field" placeholder="Password" required>
+                    <span class="eye-toggle" onclick="togglePassword('pass-login', this)">👁️</span>
+                </div>
+                <div style="text-align:right; margin-top:8px;">
+                    <a href="javascript:void(0)" onclick="openOtpModal()" style="color:#38BDF8; font-size:12px; text-decoration:none;">Forgot Password?</a>
+                </div>
+                <button type="submit" class="btn-submit">Sign In</button>
+            </form>
+
+            <!-- SIGN UP FORM -->
+            <form id="signup-form" style="display:none;" onsubmit="handleSignUp(event)">
+                <div class="input-group">
+                    <input type="text" id="reg-name" class="input-field" placeholder="Full Name" required>
+                </div>
+                <div class="input-group">
+                    <input type="tel" id="reg-phone" class="input-field" placeholder="Phone Number (10 Digits)" pattern="[0-9]{10}" required>
+                </div>
+                <div class="input-group">
+                    <input type="email" id="reg-email" class="input-field" placeholder="Email Address" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="pass-signup" class="input-field" placeholder="Create Password" required minlength="6">
+                    <span class="eye-toggle" onclick="togglePassword('pass-signup', this)">👁️</span>
+                </div>
+                <button type="submit" class="btn-submit">Create Account</button>
+            </form>
+        </div>
+
+        <div class="footer-text">
+            Powered by <strong>Eagle Network SBZ</strong>
+        </div>
+    </div>
+
+    <!-- OTP & FORGOT PASSWORD MODAL -->
+    <div id="otpModal" class="modal-overlay">
+        <div class="modal-card">
+            <h3 class="modal-title">Reset Password</h3>
+            <p class="modal-sub" id="otpSubText">अपना 10 अंकों का मोबाइल नंबर दर्ज करें:</p>
+
+            <!-- Step 1: Send OTP -->
+            <div id="step-send-otp">
+                <div class="input-group">
+                    <input type="tel" id="reset-phone" class="input-field" placeholder="Mobile Number" maxlength="10">
+                </div>
+                <button type="button" class="btn-submit" onclick="sendSMSOTP()">Send OTP via SMS</button>
+            </div>
+
+            <!-- Step 2: Verify OTP & New Pass -->
+            <div id="step-verify-otp" style="display:none;">
+                <div class="input-group">
+                    <input type="text" id="otp-input" class="input-field" placeholder="Enter 4-Digit OTP" maxlength="4">
+                </div>
+                <div class="input-group">
+                    <input type="password" id="new-pass" class="input-field" placeholder="New Password">
+                </div>
+                <button type="button" class="btn-submit" onclick="verifyOTPAndReset()">Verify & Update Password</button>
+            </div>
+
+            <button type="button" onclick="closeOtpModal()" style="background:none; border:none; color:#94a3b8; font-size:12px; width:100%; margin-top:12px; cursor:pointer;">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // FIREBASE INITIALIZATION WITH YOUR CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyCVsmFa6Xr-_EfUqh_ZS6tmzBwcdMZq0JA",
+            authDomain: "universal-portal-dashboard.firebaseapp.com",
+            databaseURL: "https://universal-portal-dashboard-default-rtdb.firebaseio.com",
+            projectId: "universal-portal-dashboard",
+            storageBucket: "universal-portal-dashboard.firebasestorage.app",
+            messagingSenderId: "403036962443",
+            appId: "1:403036962443:web:52b233377303ecb1c3de8e"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        function togglePassword(inputId, icon) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                icon.innerText = "🙈";
+            } else {
+                input.type = "password";
+                icon.innerText = "👁️";
+            }
+        }
+
+        function switchAuth(type) {
+            if (type === 'login') {
+                document.getElementById('login-form').style.display = 'block';
+                document.getElementById('signup-form').style.display = 'none';
+                document.getElementById('tab-login').classList.add('active');
+                document.getElementById('tab-signup').classList.remove('active');
+            } else {
+                document.getElementById('login-form').style.display = 'none';
+                document.getElementById('signup-form').style.display = 'block';
+                document.getElementById('tab-signup').classList.add('active');
+                document.getElementById('tab-login').classList.remove('active');
+            }
+        }
+
+        // REAL FIREBASE SIGN IN
+        function handleSignIn(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-user').value.trim();
+            const pass = document.getElementById('pass-login').value.trim();
+
+            if (!email || !pass) {
+                alert("कृपया ईमेल और पासवर्ड दोनों दर्ज करें!");
+                return;
+            }
+
+            firebase.auth().signInWithEmailAndPassword(email, pass)
+            .then((userCredential) => {
+                alert("लॉगिन सफल रहा!");
+                window.location.href = "./dashboard.html";
+            })
+            .catch((error) => {
+                alert("लॉगिन त्रुटि: गलत ईमेल या पासवर्ड!\n" + error.message);
+            });
+        }
+
+        // REAL FIREBASE SIGN UP
+        function handleSignUp(e) {
+            e.preventDefault();
+            const email = document.getElementById('reg-email').value.trim();
+            const pass = document.getElementById('pass-signup').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+
+            if (phone.length !== 10) {
+                alert("कृपया सही 10 अंकों का मोबाइल नंबर दर्ज करें!");
+                return;
+            }
+
+            firebase.auth().createUserWithEmailAndPassword(email, pass)
+            .then((userCredential) => {
+                alert("अकाउंट सफलतापूर्वक बन गया! अब आप लॉगिन कर सकते हैं।");
+                switchAuth('login');
+            })
+            .catch((error) => {
+                alert("साइन-अप त्रुटि: " + error.message);
+            });
+        }
+
+        // REAL FIREBASE GOOGLE LOGIN
+        function handleGoogleLogin() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider)
+            .then((result) => {
+                alert("गूगल लॉगिन सफल!");
+                window.location.href = "./dashboard.html";
+            })
+            .catch((error) => {
+                alert("गूगल साइन-इन त्रुटि: " + error.message);
+            });
+        }
+
+        /* SMS OTP MODAL LOGIC */
+        function openOtpModal() {
+            document.getElementById('otpModal').style.display = 'flex';
+            document.getElementById('step-send-otp').style.display = 'block';
+            document.getElementById('step-verify-otp').style.display = 'none';
+            document.getElementById('otpSubText').innerText = "अपना 10 अंकों का मोबाइल नंबर दर्ज करें:";
+        }
+
+        function closeOtpModal() {
+            document.getElementById('otpModal').style.display = 'none';
+        }
+
+        let generatedOtp = null;
+        function sendSMSOTP() {
+            const phone = document.getElementById('reset-phone').value.trim();
+            if (!phone || phone.length !== 10) {
+                alert("कृपया 10 अंकों का मोबाइल नंबर दर्ज करें!");
+                return;
+            }
+            
+            generatedOtp = "1234";
+            alert(`SMS भेजा गया! (Demo OTP: ${generatedOtp})`);
+            
+            document.getElementById('step-send-otp').style.display = 'none';
+            document.getElementById('step-verify-otp').style.display = 'block';
+            document.getElementById('otpSubText').innerText = `मोबाइल ${phone} पर भेजा गया OTP और नया पासवर्ड दर्ज करें:`;
+        }
+
+        function verifyOTPAndReset() {
+            const enteredOtp = document.getElementById('otp-input').value.trim();
+            const newPass = document.getElementById('new-pass').value.trim();
+
+            if (enteredOtp !== generatedOtp) {
+                alert("गलत OTP! कृपया सही OTP दर्ज करें।");
+                return;
+            }
+            if (newPass.length < 6) {
+                alert("नया पासवर्ड कम से कम 6 अक्षरों का होना चाहिए!");
+                return;
+            }
+
+            alert("पासवर्ड सफलतापूर्वक बदल दिया गया है! अब लॉगिन करें।");
+            closeOtpModal();
+        }
+    </script>
+</body>
+</html>
