@@ -184,39 +184,98 @@
             }
         }
 
-        // Tab Switcher Helper with State Storage
-        function switchAppTab(moduleName, element) {
-            // Save tab state in localStorage so refresh stays on current page
-            localStorage.setItem('activeTab', moduleName);
+        // Tab Switcher Helper (Includes Bottom Nav + Sidebar Nav)
+function switchAppTab(moduleName, element) {
+    // 1. Save state so refresh stays on current page
+    localStorage.setItem('activeTab', moduleName);
 
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            
-            // Highlight current active tab button
-            if (element) {
-                element.classList.add('active');
+    // 2. Clear Active Class from Bottom Nav
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    
+    // Highlight Active Bottom Nav Button (If applicable)
+    if (element) {
+        element.classList.add('active');
+    } else {
+        const activeBtn = document.querySelector(`.nav-item[data-tab="${moduleName}"]`);
+        if (activeBtn) activeBtn.classList.add('active');
+    }
+
+    // 3. Main Display Area
+    const container = document.getElementById('mainContainer');
+    if (!container) return;
+
+    // Clear Previous Content
+    container.innerHTML = "";
+
+    // 4. Safe Module Routing (Home, Bottom Tabs, AND Sidebar Items)
+    switch (moduleName) {
+        case 'home':
+            if (typeof renderHomeModule === 'function') renderHomeModule(container);
+            else if (typeof renderHomeComponent === 'function') renderHomeComponent(container);
+            break;
+
+        case 'recharge':
+            if (typeof renderRechargeModule === 'function') renderRechargeModule(container);
+            break;
+
+        case 'status':
+            if (typeof renderStatusModule === 'function') renderStatusModule(container);
+            break;
+
+        case 'connection':
+            if (typeof renderConnectionModule === 'function') renderConnectionModule(container);
+            break;
+
+        /* SIDEBAR MODULES FIX */
+        case 'routerControl':
+            if (typeof renderRouterControlComponent === 'function') {
+                renderRouterControlComponent(container);
+            } else if (typeof renderRouterControlModule === 'function') {
+                renderRouterControlModule(container);
             } else {
-                const activeBtn = document.querySelector(`.nav-item[data-tab="${moduleName}"]`);
-                if (activeBtn) activeBtn.classList.add('active');
+                container.innerHTML = `<div class="app-card"><h2>⚙️ Router Control Module</h2><p>Router control feature loaded.</p></div>`;
             }
+            break;
 
-            const container = document.getElementById('mainContainer');
-            if (!container) return;
-
-            // Load module content safely
-            if (moduleName === 'home' && typeof renderHomeModule === 'function') {
-                renderHomeModule(container);
-            } else if (moduleName === 'recharge' && typeof renderRechargeModule === 'function') {
-                renderRechargeModule(container);
-            } else if (moduleName === 'status' && typeof renderStatusModule === 'function') {
-                renderStatusModule(container);
-            } else if (moduleName === 'connection' && typeof renderConnectionModule === 'function') {
-                renderConnectionModule(container);
-            } else if (typeof window.switchAppTab === 'function') {
-                window.switchAppTab(moduleName);
+        case 'appSettings':
+            if (typeof renderAppSettingsComponent === 'function') {
+                renderAppSettingsComponent(container);
+            } else if (typeof renderAppSettingsModule === 'function') {
+                renderAppSettingsModule(container);
+            } else {
+                container.innerHTML = `<div class="app-card"><h2>📱 App Settings</h2><p>Settings module loaded.</p></div>`;
             }
+            break;
 
-            setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 50);
-        }
+        case 'billingHistory':
+            if (typeof renderBillingHistoryComponent === 'function') {
+                renderBillingHistoryComponent(container);
+            } else if (typeof renderBillingModule === 'function') {
+                renderBillingModule(container);
+            } else {
+                container.innerHTML = `<div class="app-card"><h2>📄 Invoices & Billing</h2><p>Billing module loaded.</p></div>`;
+            }
+            break;
+
+        case 'supportDesk':
+            if (typeof renderSupportDeskComponent === 'function') {
+                renderSupportDeskComponent(container);
+            } else if (typeof renderSupportDeskModule === 'function') {
+                renderSupportDeskModule(container);
+            } else {
+                container.innerHTML = `<div class="app-card"><h2>🎟️ Support Desk</h2><p>Support ticket module loaded.</p></div>`;
+            }
+            break;
+
+        default:
+            console.warn("Module not found, fallback to Home:", moduleName);
+            if (typeof renderHomeModule === 'function') renderHomeModule(container);
+            break;
+    }
+
+    // Re-init Lucide Icons
+    setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 50);
+}
 
         function handleLogout() {
             if (confirm("क्या आप लॉग आउट करना चाहते हैं?")) {
