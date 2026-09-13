@@ -1,0 +1,514 @@
+/**
+ * NextG WiFi - Application Settings Component
+ * File: src/components/appSettings.js
+ * Features: REAL Working Theme, Language Switch (EN/HI/UR), Independent App Lock System (PIN/Password/Pattern/Fingerprint) & LocalStorage Persistence
+ */
+
+// 1. भाषा के शब्द (Translation Dictionary - English, Hindi, Urdu)
+const TRANSLATIONS = {
+    en: {
+        pageTitle: "App Settings & Preferences",
+        appearanceSection: "🎨 Appearance & Display",
+        themeLabel: "App Theme",
+        themeSub: "Switch between Light and Dark interface",
+        darkOpt: "🌙 Dark Mode",
+        lightOpt: "☀️ Light Mode",
+        langLabel: "App Language",
+        langSub: "Select your preferred language",
+        securitySection: "🔒 App Lock System",
+        enableLockLabel: "Enable App Lock",
+        enableLockSub: "Protect this app with an independent security lock",
+        lockTypeLabel: "Choose Lock Type",
+        lockTypeSub: "Select how you want to lock this app",
+        pinOpt: "🔢 4-Digit PIN",
+        passwordOpt: "🔑 Text Password",
+        patternOpt: "📐 Pattern Lock",
+        bioOpt: "👆 Fingerprint / Biometric",
+        setPinLabel: "Set 4-Digit PIN",
+        setPinSub: "Enter a secret 4-digit code for the app",
+        setPassLabel: "Set App Password",
+        setPassSub: "Enter a custom secret password",
+        setPatternLabel: "Set App Pattern",
+        setPatternSub: "Draw/Enter pattern node path (e.g. 1-2-5-6)",
+        bioSubText: "App will use device Fingerprint / Face ID authentication.",
+        saveLockBtn: "💾 Save App Lock Settings",
+        prefSection: "🔔 Preferences & Network",
+        pushNotif: "Push Notifications",
+        pushSub: "Get alerts for data usage and bill updates",
+        dataSaver: "Data Saver Mode",
+        dataSaverSub: "Reduce background data sync to save data",
+        autoUpdate: "Auto-Update over WiFi",
+        autoUpdateSub: "Keep NextG WiFi updated automatically",
+        storageSection: "🛠️ Storage & Maintenance",
+        clearCache: "Clear App Cache",
+        clearCacheSub: "Frees up temporary storage and speeds up the app",
+        clearBtn: "🗑️ Clear Cache",
+        resetSettings: "Reset Settings to Default",
+        resetSub: "Restores all settings to original factory defaults",
+        resetBtn: "🔄 Reset All",
+        aboutTitle: "NextG Wi-Fi Application",
+        version: "Version:",
+        footerText: "Built with ❤️ for High-Speed Connectivity"
+    },
+    hi: {
+        pageTitle: "ऐप सेटिंग्स और प्राथमिकताएं",
+        appearanceSection: "🎨 उपस्थिति और डिस्प्ले",
+        themeLabel: "ऐप थीम",
+        themeSub: "लाइट और डार्क मोड के बीच स्विच करें",
+        darkOpt: "🌙 डार्क मोड",
+        lightOpt: "☀️ लाइट मोड",
+        langLabel: "ऐप की भाषा",
+        langSub: "अपनी पसंदीदा भाषा चुनें",
+        securitySection: "🔒 ऐप लॉक सिस्टम",
+        enableLockLabel: "ऐप लॉक सक्षम करें",
+        enableLockSub: "इस ऐप को एक स्वतंत्र सुरक्षा लॉक से सुरक्षित करें",
+        lockTypeLabel: "लॉक का प्रकार चुनें",
+        lockTypeSub: "चुनें कि आप ऐप को कैसे लॉक करना चाहते हैं",
+        pinOpt: "🔢 4-अंकीय पिन (PIN)",
+        passwordOpt: "🔑 टेक्स्ट पासवर्ड",
+        patternOpt: "📐 पैटर्न लॉक",
+        bioOpt: "👆 फिंगरप्रिंट / बायोमेट्रिक",
+        setPinLabel: "4-अंकीय पिन सेट करें",
+        setPinSub: "ऐप के लिए 4 अंकों का गुप्त कोड दर्ज करें",
+        setPassLabel: "ऐप पासवर्ड सेट करें",
+        setPassSub: "अपना कस्टम गुप्त पासवर्ड दर्ज करें",
+        setPatternLabel: "ऐप पैटर्न सेट करें",
+        setPatternSub: "पैटर्न नोड पाथ दर्ज करें (जैसे: 1-2-5-6)",
+        bioSubText: "ऐप फिंगरप्रिंट या फ़ेस आईडी प्रमाणीकरण का उपयोग करेगा।",
+        saveLockBtn: "💾 ऐप लॉक सेटिंग्स सहेजें",
+        prefSection: "🔔 प्राथमिकताएं और नेटवर्क",
+        pushNotif: "पुश सूचनाएं (Notifications)",
+        pushSub: "डेटा उपयोग और बिल अपडेट के अलर्ट प्राप्त करें",
+        dataSaver: "डेटा सेवर मोड",
+        dataSaverSub: "डेटा बचाने के लिए बैकग्राउंड डेटा कम करें",
+        autoUpdate: "वाई-फाई पर ऑटो-अपडेट",
+        autoUpdateSub: "NextG वाई-फ़ाई को स्वचालित रूप से अपडेट रखें",
+        storageSection: "🛠️ स्टोरेज और रखरखाव",
+        clearCache: "ऐप कैश (Cache) साफ़ करें",
+        clearCacheSub: "अस्थायी स्थान साफ़ करता है और ऐप को तेज़ करता है",
+        clearBtn: "🗑️ कैश साफ़ करें",
+        resetSettings: "सेटिंग्स को डिफ़ॉल्ट पर रीसेट करें",
+        resetSub: "सभी सेटिंग्स को मूल फ़ैक्टरी डिफ़ॉल्ट पर पुनर्स्थापित करता है",
+        resetBtn: "🔄 सभी रीसेट करें",
+        aboutTitle: "NextG वाई-फ़ाई एप्लिकेशन",
+        version: "संस्करण:",
+        footerText: "हाई-स्पीड कनेक्टिविटी के लिए ❤️ के साथ निर्मित"
+    },
+    ur: {
+        pageTitle: "ایپ سیٹنگز اور ترجیحات",
+        appearanceSection: "🎨 مظہر اور ڈسپلے",
+        themeLabel: "ایپ تھیم",
+        themeSub: "لائٹ اور ڈارک موڈ کے درمیان سوئچ کریں",
+        darkOpt: "🌙 ڈارک موڈ",
+        lightOpt: "☀️ لائٹ موڈ",
+        langLabel: "ایپ کی زبان",
+        langSub: "اپنی پسندیدہ زبان منتخب کریں",
+        securitySection: "🔒 ایپ لاک سسٹم",
+        enableLockLabel: "ایپ لاک فعال کریں",
+        enableLockSub: "اس ایپ کو ایک الگ سیکیورٹی لاک کے ساتھ محفوظ بنائیں",
+        lockTypeLabel: "لاک کی قسم منتخب کریں",
+        lockTypeSub: "منتخب کریں کہ آپ ایپ کو کیسے لاک کرنا چاہتے ہیں",
+        pinOpt: "🔢 4 ہندسوں کا پن (PIN)",
+        passwordOpt: "🔑 ٹیکسٹ پاس ورڈ",
+        patternOpt: "📐 پیٹرن لاک",
+        bioOpt: "👆 فنگر پرنٹ / بائیو میٹرک",
+        setPinLabel: "4 ہندسوں کا پن سیٹ کریں",
+        setPinSub: "ایپ کے لیے 4 ہندسوں کا خفیہ کوڈ درج کریں",
+        setPassLabel: "ایپ پاس ورڈ سیٹ کریں",
+        setPassSub: "اپنا پسندیدہ خفیہ پاس ورڈ درج کریں",
+        setPatternLabel: "ایپ پیٹرن سیٹ کریں",
+        setPatternSub: "پیٹرن پاتھ درج کریں (مثال: 1-2-5-6)",
+        bioSubText: "ایپ فنگر پرنٹ یا فیس آئی ڈی کی تصدیق کا استعمال کرے گی۔",
+        saveLockBtn: "💾 ایپ لاک ترجیحات محفوظ کریں",
+        prefSection: "🔔 ترجیحات اور نیٹ ورک",
+        pushNotif: "پش اطلاعات (Notifications)",
+        pushSub: "ڈیٹا کے استعمال اور بل کی تازہ کاریوں کے الرٹس حاصل کریں",
+        dataSaver: "ڈیٹا سیور موڈ",
+        dataSaverSub: "ڈیٹا بچانے کے لیے پس منظر کا ڈیٹا کم کریں",
+        autoUpdate: "وائی فائی پر خودکار اپ ڈیٹ",
+        autoUpdateSub: "NextG وائی فائی کو خود بخود اپ ڈیٹ رکھیں",
+        storageSection: "🛠️ سٹوریج اور دیکھ بھال",
+        clearCache: "ایپ کیشے (Cache) صاف کریں",
+        clearCacheSub: "عارضی جگہ کو صاف کرتا ہے اور ایپ کو تیز کرتا ہے",
+        clearBtn: "🗑️ کیشے صاف کریں",
+        resetSettings: "سیٹنگز کو ڈیفالٹ پر ری سیٹ کریں",
+        resetSub: "تمام سیٹنگز کو اصل فیکٹری ڈیفالٹ پر بحال کرتا ہے",
+        resetBtn: "🔄 سبھی ری سیٹ کریں",
+        aboutTitle: "NextG وائی فائی ایپلی کیشن",
+        version: "ورژن:",
+        footerText: "تیز رفتار کنیکٹیوٹی کے لیے ❤️ کے ساتھ بنایا گیا"
+    }
+};
+
+// 2. Persistent State Management
+const defaultSettings = {
+    theme: "dark", // 'dark' or 'light'
+    language: "hi", // 'en', 'hi', 'ur'
+    appLockEnabled: false,
+    securityType: "pin", // 'pin', 'password', 'pattern', 'biometric'
+    appPin: "1234",
+    appPassword: "",
+    appPattern: "1-2-3-4",
+    pushNotifications: true,
+    autoAppUpdate: true,
+    dataSaverMode: false,
+    appVersion: "v2.4.1 (Latest)"
+};
+
+window.nextgAppSettings = JSON.parse(localStorage.getItem('nextg_app_settings')) || defaultSettings;
+
+function saveAppSettings() {
+    localStorage.setItem('nextg_app_settings', JSON.stringify(window.nextgAppSettings));
+    applyGlobalTheme();
+}
+
+// 3. Real Theme Engine
+function applyGlobalTheme() {
+    const isDark = window.nextgAppSettings.theme === "dark";
+    if (isDark) {
+        document.body.style.backgroundColor = "#0f172a";
+        document.body.style.color = "#ffffff";
+        document.body.classList.remove("light-theme");
+        document.body.classList.add("dark-theme");
+    } else {
+        document.body.style.backgroundColor = "#f8fafc";
+        document.body.style.color = "#0f172a";
+        document.body.classList.remove("dark-theme");
+        document.body.classList.add("light-theme");
+    }
+}
+
+// Initialize Theme
+applyGlobalTheme();
+
+// 4. Main Component Rendering
+function renderAppSettingsComponent(containerElement) {
+    if (!containerElement) return;
+
+    window.currentSettingsContainer = containerElement;
+    const settings = window.nextgAppSettings;
+    const lang = TRANSLATIONS[settings.language] || TRANSLATIONS.en;
+    const isLight = settings.theme === 'light';
+    const isRtl = settings.language === 'ur';
+
+    containerElement.innerHTML = `
+        <div class="settings-wrapper ${isLight ? 'light-mode-card' : ''}" style="${isRtl ? 'direction: rtl; text-align: right;' : 'direction: ltr; text-align: left;'}">
+            <h2 class="page-title">${lang.pageTitle}</h2>
+
+            <!-- SECTION 1: APPEARANCE -->
+            <div class="settings-card">
+                <h3>${lang.appearanceSection}</h3>
+                
+                <div class="setting-item">
+                    <div class="item-info">
+                        <strong>${lang.themeLabel}</strong>
+                        <span>${lang.themeSub}</span>
+                    </div>
+                    <div class="item-control">
+                        <select id="themeSelector" class="settings-select" onchange="changeAppTheme(this.value)">
+                            <option value="dark" ${settings.theme === 'dark' ? 'selected' : ''}>${lang.darkOpt}</option>
+                            <option value="light" ${settings.theme === 'light' ? 'selected' : ''}>${lang.lightOpt}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="item-info">
+                        <strong>${lang.langLabel}</strong>
+                        <span>${lang.langSub}</span>
+                    </div>
+                    <div class="item-control">
+                        <select id="langSelector" class="settings-select" onchange="changeAppLanguage(this.value)">
+                            <option value="en" ${settings.language === 'en' ? 'selected' : ''}>English</option>
+                            <option value="hi" ${settings.language === 'hi' ? 'selected' : ''}>हिंदी (Hindi)</option>
+                            <option value="ur" ${settings.language === 'ur' ? 'selected' : ''}>اردو (Urdu)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: APP LOCK SYSTEM (INDEPENDENT LOCK SELECTION) -->
+            <div class="settings-card">
+                <h3>${lang.securitySection}</h3>
+
+                <!-- Toggle App Lock -->
+                <div class="setting-item">
+                    <div class="item-info">
+                        <strong>${lang.enableLockLabel}</strong>
+                        <span>${lang.enableLockSub}</span>
+                    </div>
+                    <div class="item-control">
+                        <label class="toggle-switch">
+                            <input type="checkbox" ${settings.appLockEnabled ? 'checked' : ''} onchange="toggleSetting('appLockEnabled')">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                ${settings.appLockEnabled ? `
+                    <!-- Select Lock Mechanism -->
+                    <div class="setting-item">
+                        <div class="item-info">
+                            <strong>${lang.lockTypeLabel}</strong>
+                            <span>${lang.lockTypeSub}</span>
+                        </div>
+                        <div class="item-control">
+                            <select class="settings-select" onchange="changeSecurityType(this.value)">
+                                <option value="pin" ${settings.securityType === 'pin' ? 'selected' : ''}>${lang.pinOpt}</option>
+                                <option value="password" ${settings.securityType === 'password' ? 'selected' : ''}>${lang.passwordOpt}</option>
+                                <option value="pattern" ${settings.securityType === 'pattern' ? 'selected' : ''}>${lang.patternOpt}</option>
+                                <option value="biometric" ${settings.securityType === 'biometric' ? 'selected' : ''}>${lang.bioOpt}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Input based on Lock Type -->
+                    <div class="setting-item lock-input-box" style="flex-direction: column; align-items: flex-start; gap: 10px; background: rgba(0,0,0,0.15); padding: 14px; border-radius: 10px; margin-top: 10px;">
+                        ${settings.securityType === 'pin' ? `
+                            <div class="item-info">
+                                <strong>${lang.setPinLabel}</strong>
+                                <span>${lang.setPinSub}</span>
+                            </div>
+                            <div style="display: flex; gap: 10px; width: 100%;">
+                                <input type="password" id="appPinInput" maxlength="4" value="${settings.appPin || ''}" placeholder="****" class="settings-input" style="width: 140px; text-align: center; letter-spacing: 6px; font-weight: bold;">
+                                <button class="action-btn save-btn" onclick="saveLockCredential()">${lang.saveLockBtn}</button>
+                            </div>
+                        ` : ''}
+
+                        ${settings.securityType === 'password' ? `
+                            <div class="item-info">
+                                <strong>${lang.setPassLabel}</strong>
+                                <span>${lang.setPassSub}</span>
+                            </div>
+                            <div style="display: flex; gap: 10px; width: 100%;">
+                                <input type="password" id="appPassInput" value="${settings.appPassword || ''}" placeholder="Enter Password" class="settings-input" style="flex: 1;">
+                                <button class="action-btn save-btn" onclick="saveLockCredential()">${lang.saveLockBtn}</button>
+                            </div>
+                        ` : ''}
+
+                        ${settings.securityType === 'pattern' ? `
+                            <div class="item-info">
+                                <strong>${lang.setPatternLabel}</strong>
+                                <span>${lang.setPatternSub}</span>
+                            </div>
+                            <div style="display: flex; gap: 10px; width: 100%;">
+                                <input type="text" id="appPatternInput" value="${settings.appPattern || '1-2-5-6'}" placeholder="e.g. 1-4-7-8" class="settings-input" style="flex: 1;">
+                                <button class="action-btn save-btn" onclick="saveLockCredential()">${lang.saveLockBtn}</button>
+                            </div>
+                        ` : ''}
+
+                        ${settings.securityType === 'biometric' ? `
+                            <div class="item-info">
+                                <strong>${lang.bioOpt}</strong>
+                                <span>${lang.bioSubText}</span>
+                            </div>
+                            <button class="action-btn save-btn" style="width: 100%; margin-top: 6px;" onclick="saveLockCredential()">👍 Activate Biometric Lock</button>
+                        ` : ''}
+                    </div>
+                ` : ''}
+            </div>
+
+            <!-- SECTION 3: PREFERENCES & NETWORK -->
+            <div class="settings-card">
+                <h3>${lang.prefSection}</h3>
+
+                <div class="setting-item">
+                    <div class="item-info">
+                        <strong>${lang.pushNotif}</strong>
+                        <span>${lang.pushSub}</span>
+                    </div>
+                    <div class="item-control">
+                        <label class="toggle-switch">
+                            <input type="checkbox" ${settings.pushNotifications ? 'checked' : ''} onchange="toggleSetting('pushNotifications')">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="item-info">
+                        <strong>${lang.dataSaver}</strong>
+                        <span>${lang.dataSaverSub}</span>
+                    </div>
+                    <div class="item-control">
+                        <label class="toggle-switch">
+                            <input type="checkbox" ${settings.dataSaverMode ? 'checked' : ''} onchange="toggleSetting('dataSaverMode')">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="item-info">
+                        <strong>${lang.autoUpdate}</strong>
+                        <span>${lang.autoUpdateSub}</span>
+                    </div>
+                    <div class="item-control">
+                        <label class="toggle-switch">
+                            <input type="checkbox" ${settings.autoAppUpdate ? 'checked' : ''} onchange="toggleSetting('autoAppUpdate')">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 4: STORAGE & MAINTENANCE -->
+            <div class="settings-card">
+                <h3>${lang.storageSection}</h3>
+
+                <div class="setting-item">
+                    <div class="item-info">
+                        <strong>${lang.clearCache}</strong>
+                        <span>${lang.clearCacheSub}</span>
+                    </div>
+                    <div class="item-control">
+                        <button class="action-btn clear-btn" onclick="clearAppCache()">${lang.clearBtn}</button>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="item-info">
+                        <strong>${lang.resetSettings}</strong>
+                        <span>${lang.resetSub}</span>
+                    </div>
+                    <div class="item-control">
+                        <button class="action-btn reset-btn" onclick="resetAppSettings()">${lang.resetBtn}</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 5: ABOUT -->
+            <div class="settings-card about-card">
+                <div class="about-info">
+                    <h4>${lang.aboutTitle}</h4>
+                    <p>${lang.version} <strong>${settings.appVersion}</strong></p>
+                    <p class="build-txt">${lang.footerText}</p>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .settings-wrapper { max-width: 600px; margin: 0 auto; transition: all 0.3s ease; }
+            .page-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; }
+
+            /* Theme Configurations */
+            .dark-theme .settings-card { background: #1e293b; border: 1px solid #334155; color: #fff; }
+            .dark-theme .settings-card h3 { color: #f8fafc; border-bottom: 1px solid #334155; }
+            .dark-theme .item-info strong { color: #f1f5f9; }
+            .dark-theme .item-info span { color: #94a3b8; }
+            .dark-theme .settings-select, .dark-theme .settings-input { background: #0f172a; border: 1px solid #334155; color: #fff; }
+            .dark-theme .about-card { background: #0f172a; }
+
+            .light-theme .page-title { color: #0f172a !important; }
+            .light-theme .settings-card { background: #ffffff !important; border: 1px solid #cbd5e1 !important; color: #0f172a !important; box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important; }
+            .light-theme .settings-card h3 { color: #0f172a !important; border-bottom: 1px solid #e2e8f0 !important; }
+            .light-theme .item-info strong { color: #1e293b !important; }
+            .light-theme .item-info span { color: #64748b !important; }
+            .light-theme .settings-select, .light-theme .settings-input { background: #f1f5f9 !important; border: 1px solid #cbd5e1 !important; color: #0f172a !important; }
+            .light-theme .about-card { background: #f1f5f9 !important; }
+
+            .settings-card { border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+            .settings-card h3 { font-size: 15px; margin-top: 0; margin-bottom: 16px; padding-bottom: 10px; }
+
+            .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed rgba(150,150,150,0.2); }
+            .setting-item:last-child { border-bottom: none; }
+
+            .item-info { display: flex; flex-direction: column; gap: 4px; max-width: 70%; }
+            .settings-select, .settings-input { padding: 8px 12px; border-radius: 8px; font-size: 12px; outline: none; }
+
+            .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+            .toggle-switch input { opacity: 0; width: 0; height: 0; }
+            .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #94a3b8; transition: .3s; border-radius: 24px; }
+            .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+            input:checked + .slider { background-color: #F58220; }
+            input:checked + .slider:before { transform: translateX(20px); }
+
+            .action-btn { padding: 8px 14px; border-radius: 8px; border: none; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+            .save-btn { background: #16a34a; color: #fff; }
+            .clear-btn { background: rgba(56, 189, 248, 0.15); color: #0284c7; border: 1px solid #0284c7; }
+            .reset-btn { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; }
+
+            .about-card { text-align: center; border-color: #F58220 !important; }
+            .about-info h4 { margin: 0 0 6px 0; color: #F58220; font-size: 16px; }
+            .about-info p { margin: 4px 0; font-size: 12px; }
+            .build-txt { font-size: 10px !important; color: #64748b !important; margin-top: 8px !important; }
+        </style>
+    `;
+}
+
+// 5. Action Handlers
+
+window.changeAppTheme = function(newTheme) {
+    window.nextgAppSettings.theme = newTheme;
+    saveAppSettings();
+    renderAppSettingsComponent(window.currentSettingsContainer || document.getElementById("mainContainer"));
+};
+
+window.changeAppLanguage = function(newLang) {
+    window.nextgAppSettings.language = newLang;
+    saveAppSettings();
+    renderAppSettingsComponent(window.currentSettingsContainer || document.getElementById("mainContainer"));
+};
+
+window.toggleSetting = function(key) {
+    if (key in window.nextgAppSettings) {
+        window.nextgAppSettings[key] = !window.nextgAppSettings[key];
+        saveAppSettings();
+        renderAppSettingsComponent(window.currentSettingsContainer || document.getElementById("mainContainer"));
+    }
+};
+
+window.changeSecurityType = function(type) {
+    window.nextgAppSettings.securityType = type;
+    saveAppSettings();
+    renderAppSettingsComponent(window.currentSettingsContainer || document.getElementById("mainContainer"));
+};
+
+// Real Working Lock Credentials Save Logic
+window.saveLockCredential = function() {
+    const type = window.nextgAppSettings.securityType;
+    const lang = window.nextgAppSettings.language;
+
+    if (type === 'pin') {
+        const pinVal = document.getElementById("appPinInput") ? document.getElementById("appPinInput").value : "";
+        if (pinVal.length === 4 && !isNaN(pinVal)) {
+            window.nextgAppSettings.appPin = pinVal;
+            saveAppSettings();
+            alert(lang === 'hi' ? "🔒 4-अंकीय पिन सफलतापूर्वक सहेजा गया!" : (lang === 'ur' ? "🔒 4 ہندسوں کا پن کامیابی سے محفوظ ہو گیا!" : "🔒 4-Digit App PIN Saved!"));
+        } else {
+            alert("⚠️ Please enter a valid 4-digit numeric PIN.");
+        }
+    } else if (type === 'password') {
+        const passVal = document.getElementById("appPassInput") ? document.getElementById("appPassInput").value : "";
+        if (passVal.trim().length >= 3) {
+            window.nextgAppSettings.appPassword = passVal;
+            saveAppSettings();
+            alert(lang === 'hi' ? "🔑 ऐप पासवर्ड सहेजा गया!" : (lang === 'ur' ? "🔑 ایپ پاس ورڈ محفوظ ہو گیا!" : "🔑 App Password Saved!"));
+        } else {
+            alert("⚠️ Please enter a password with at least 3 characters.");
+        }
+    } else if (type === 'pattern') {
+        const patVal = document.getElementById("appPatternInput") ? document.getElementById("appPatternInput").value : "";
+        if (patVal.trim().length > 0) {
+            window.nextgAppSettings.appPattern = patVal;
+            saveAppSettings();
+            alert(lang === 'hi' ? "📐 ऐप पैटर्न लॉक सहेजा गया!" : (lang === 'ur' ? "📐 ایپ پیٹرن لاک محفوظ ہو گیا!" : "📐 App Pattern Saved!"));
+        }
+    } else if (type === 'biometric') {
+        saveAppSettings();
+        alert(lang === 'hi' ? "👆 ऐप बायोमेट्रिक लॉक सक्षम किया गया!" : (lang === 'ur' ? "👆 ایپ بائیو میٹرک لاک فعال ہو گیا!" : "👆 Biometric Lock Enabled for App!"));
+    }
+};
+
+window.clearAppCache = function() {
+    sessionStorage.clear();
+    const msg = window.nextgAppSettings.language === 'hi' ? "🧹 ऐप कैश साफ़ कर दिया गया है!" : 
+                (window.nextgAppSettings.language === 'ur' ? "🧹 ایپ کیشے صاف ہو گیا ہے!" : "🧹 App Cache Cleared!");
+    alert(msg);
+};
+
+window.resetAppSettings = function() {
+    window.nextgAppSettings = { ...defaultSettings };
+    saveAppSettings();
+    renderAppSettingsComponent(window.currentSettingsContainer || document.getElementById("mainContainer"));
+};
