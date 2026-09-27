@@ -1,0 +1,24 @@
+{
+  "name": "NextG WiFi",
+  "short_name": "NextG WiFi",
+  "description": "Next G Wi-Fi - Official Fiber & Broadband Self-Care App for seamless Online Recharges, Instant Complaints, Live Validity Tracking, and Remote Router Control.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b1329",
+  "theme_color": "#0b1329",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://i.postimg.cc/wxhBT76M/Next-Wi-Fi-Icon-512x512.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://i.postimg.cc/wxhBT76M/Next-Wi-Fi-Icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
